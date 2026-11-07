@@ -13,6 +13,13 @@ A context-aware Windows overlay for application-specific shortcuts and workflows
 
 `C#` · `WinUI 3` · `.NET`
 
+### [Fluent Studio](https://www.fluent-studio.com/en)
+**Software studio website**
+
+Designed and developed the studio website, including multilingual content, software product pages, and Supabase integration.
+
+`Next.js` · `React` · `TypeScript` · `Supabase`
+
 ### [FluentTimer](https://github.com/AaronPG095/FluentTimer)
 **Windows desktop application · [Latest release](https://github.com/AaronPG095/FluentTimer/releases/latest)**
 
@@ -26,13 +33,6 @@ A native timer with a floating desktop widget, Pomodoro sessions, reminders, ala
 A festival web application combining an interactive timetable, multilingual content, administration, and contribution-based ticketing.
 
 `React` · `TypeScript` · `Supabase` · `PostgreSQL`
-
-### [Personal portfolio](https://github.com/AaronPG095/my-minimalist-portfolio)
-**Web application · [Live site](https://aaronpaulgreyling.netlify.app/)**
-
-A bilingual developer portfolio documenting my projects, technical background, and experience.
-
-`Next.js` · `React` · `TypeScript`
 
 ## Technical focus
 
