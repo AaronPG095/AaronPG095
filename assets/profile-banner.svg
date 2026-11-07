@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="288" viewBox="0 0 1280 288" role="img" aria-labelledby="title description">
+  <title id="title">Aaron Greyling</title>
+  <desc id="description">Software developer. Web applications, Windows software and automation.</desc>
+  <rect width="1280" height="288" fill="#101b26"/>
+  <path d="M0 0H1280" stroke="#213342" stroke-width="2"/>
+  <path d="M68 50H142" stroke="#5cc8c5" stroke-width="4"/>
+  <text x="68" y="115" fill="#ecf3f5" font-size="53" font-weight="650" font-family="Segoe UI, Arial, sans-serif" letter-spacing="-1.5">Aaron Greyling</text>
+  <text x="70" y="159" fill="#b8cbd0" font-size="21" font-family="Segoe UI, Arial, sans-serif">Software developer · Product builder</text>
+  <path d="M70 192H1210" stroke="#314350" stroke-width="1"/>
+  <text x="70" y="231" fill="#91aaaf" font-size="17" font-family="Segoe UI, Arial, sans-serif" letter-spacing="1.1">WEB APPLICATIONS   /   WINDOWS SOFTWARE   /   AUTOMATION</text>
+  <path d="M1110 58V136H1190" fill="none" stroke="#315965" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="1110" cy="58" r="6" fill="#5cc8c5"/>
+  <circle cx="1190" cy="136" r="6" fill="#5cc8c5"/>
+  <path d="M1070 105H1145V73" fill="none" stroke="#264652" stroke-width="2" stroke-linecap="round"/>
+</svg>
