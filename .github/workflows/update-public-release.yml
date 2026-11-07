@@ -1,0 +1,40 @@
+name: Update public release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 8 * * 1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-public-release
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out profile
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Update public release section
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/update_public_releases.py
+
+      - name: Commit changes if needed
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "No release changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: refresh latest public release"
+          git push
