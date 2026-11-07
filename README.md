@@ -41,13 +41,13 @@ A bilingual developer portfolio documenting my projects, technical background, a
 - **Desktop:** C#, .NET, WinUI 3, WPF
 - **Development:** Git, Docker, automated testing, AI-assisted development workflows
 
-## Recent public release
+## Public development activity
 
-<!-- public-releases:start -->
-- [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) — 21 Oct 2026
-<!-- public-releases:end -->
+<!-- profile-activity:start -->
+**Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
-This section updates automatically from public GitHub releases.
+<sub>Public GitHub activity metrics and selected pull requests will appear after the first successful scheduled or manual update.</sub>
+<!-- profile-activity:end -->
 
 ## Background
 
