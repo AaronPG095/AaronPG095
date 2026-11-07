@@ -1,16 +1,60 @@
-## Hi there 👋
+![Aaron Greyling — software developer](assets/profile-banner.svg)
 
-<!--
-**AaronPG095/AaronPG095** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+I build web applications, native Windows software, and tools that make digital work more efficient. I'm based in Leipzig, Germany and run [Fluent Studio](https://www.fluent-studio.com/en), an independent software studio.
 
-Here are some ideas to get you started:
+[Portfolio](https://aaronpaulgreyling.netlify.app/) · [Fluent Studio](https://www.fluent-studio.com/en) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954)
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Selected work
+
+### [FluentOverlay](https://www.fluent-studio.com/en/fluentoverlay)
+**Windows productivity software · In development**
+
+A context-aware Windows overlay for application-specific shortcuts and workflows.
+
+`C#` · `WinUI 3` · `.NET`
+
+### [FluentTimer](https://github.com/AaronPG095/FluentTimer)
+**Windows desktop application · [Latest release](https://github.com/AaronPG095/FluentTimer/releases/latest)**
+
+A native timer with a floating desktop widget, Pomodoro sessions, reminders, alarms, and time tracking.
+
+`C#` · `WPF` · `.NET 10`
+
+### [Kollektiv Spinnen](https://github.com/AaronPG095/kollektiv-spinnen-website)
+**Festival platform · [Source code](https://github.com/AaronPG095/kollektiv-spinnen-website)**
+
+A festival web application combining an interactive timetable, multilingual content, administration, and contribution-based ticketing.
+
+`React` · `TypeScript` · `Supabase` · `PostgreSQL`
+
+### [Personal portfolio](https://github.com/AaronPG095/my-minimalist-portfolio)
+**Web application · [Live site](https://aaronpaulgreyling.netlify.app/)**
+
+A bilingual developer portfolio documenting my projects, technical background, and experience.
+
+`Next.js` · `React` · `TypeScript`
+
+## Technical focus
+
+- **Web:** TypeScript, JavaScript, React, Next.js, HTML, CSS, Tailwind
+- **Backend and data:** Node.js, Express, Supabase, PostgreSQL, MongoDB, MySQL, Laravel
+- **Desktop:** C#, .NET, WinUI 3, WPF
+- **Development:** Git, Docker, automated testing, AI-assisted development workflows
+
+## Recent public release
+
+<!-- public-releases:start -->
+- [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) — 21 Oct 2026
+<!-- public-releases:end -->
+
+This section updates automatically from public GitHub releases.
+
+## Background
+
+Before moving into software development, I worked in professional kitchens and organized music events and festivals. That experience shaped how I approach software: start with real problems, build usable systems, and pay attention to reliability.
+
+I completed full-stack web development training at DCI and a Laravel development internship at ECommeleon. I'm currently attending Studienkolleg Sachsen in preparation for university study in Digital Humanities, while continuing to build software through Fluent Studio.
+
+## Contact
+
+[Portfolio](https://aaronpaulgreyling.netlify.app/) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954) · [Fluent Studio](https://www.fluent-studio.com/en)
