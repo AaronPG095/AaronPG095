@@ -34,6 +34,16 @@ A festival web application combining an interactive timetable, multilingual cont
 
 `React` · `TypeScript` · `Supabase` · `PostgreSQL`
 
+## Development workflow
+
+I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a lightweight, multi-agent development process shared across Claude Code, Codex, Gemini/Antigravity and Cursor.
+
+**Plan and approve → define acceptance criteria → track implementation and handoffs → review changes → verify with CI → ship.**
+
+The repository includes a dependency-free Node.js CLI for tickets, progress logs and review packets; optional Notion task tracking; and GitHub Actions that enforce plan completion and verification before merging.
+
+[Explore the workflow](https://github.com/AaronPG095/AI-Dev-Workflow)
+
 ## Technical focus
 
 - **Web:** TypeScript, JavaScript, React, Next.js, HTML, CSS, Tailwind
