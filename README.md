@@ -44,9 +44,18 @@ A bilingual developer portfolio documenting my projects, technical background, a
 ## Public development activity
 
 <!-- profile-activity:start -->
+| Public repositories | Published releases | Authored PRs in own public repositories |
+| ---: | ---: | ---: |
+| **29** | **14** | **35** |
+
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
-<sub>Public GitHub activity metrics and selected pull requests will appear after the first successful scheduled or manual update.</sub>
+**Recent pull requests:**
+- [FluentTimer: feat: add pinned multi-timer list mode to widget](https://github.com/AaronPG095/FluentTimer/pull/5) · 07 Nov 2026
+- [FluentTimer: feat: add saved timers startup staging and auto-start](https://github.com/AaronPG095/FluentTimer/pull/3) · 07 Nov 2026
+- [FluentTimer: feat: add widget timer name visibility toggle](https://github.com/AaronPG095/FluentTimer/pull/2) · 07 Nov 2026
+
+<sub>Counts cover public repositories owned by this account; pull requests in other owners' repositories are not included. Refreshed weekly.</sub>
 <!-- profile-activity:end -->
 
 ## Background
