@@ -1,4 +1,4 @@
-name: Update public release
+name: Update public profile activity
 
 on:
   workflow_dispatch:
@@ -9,32 +9,32 @@ permissions:
   contents: write
 
 concurrency:
-  group: profile-public-release
+  group: profile-public-activity
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
-      - name: Check out profile
+      - name: Check out profile repository
         uses: actions/checkout@v4
         with:
           persist-credentials: true
 
-      - name: Update public release section
+      - name: Update public statistics and recent contributions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/update_public_releases.py
+        run: python3 scripts/update_profile.py
 
       - name: Commit changes if needed
         run: |
           if git diff --quiet -- README.md; then
-            echo "No release changes"
+            echo "Profile is up to date"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "docs: refresh latest public release"
+          git commit -m "docs: refresh public profile activity"
           git push
