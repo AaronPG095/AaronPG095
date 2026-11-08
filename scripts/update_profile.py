@@ -103,8 +103,14 @@ def get_activity(repositories):
 
 def search_total(kind, token=None):
     visibility = "" if token else " is:public"
-    result = api_json("/search/issues", {
-        "q": f"author:{OWNER} is:{kind}{visibility}",
+    if kind == "commit":
+        path = "/search/commits"
+        query = f"author:{OWNER}{visibility}"
+    else:
+        path = "/search/issues"
+        query = f"author:{OWNER} is:{kind}{visibility}"
+    result = api_json(path, {
+        "q": query,
         "per_page": 1,
     }, token=token)
     if result["incomplete_results"]:
@@ -180,7 +186,7 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     if metrics is not None:
         lines[-1] = (
             "<sub>Commit and pull request totals combine public and private activity visible to the "
-            "refresh account. Commits follow GitHub contribution rules. Issues, repositories, releases, "
+            "refresh account. Commit totals use GitHub's default-branch search. Issues, repositories, releases, "
             "and daily activity are public. Streaks and the daily average use the last 365 UTC days.</sub>"
         )
     return "\n".join(lines)

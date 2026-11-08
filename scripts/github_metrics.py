@@ -1,7 +1,7 @@
 """Render GitHub totals and public-only daily commit activity."""
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from html import escape
 import json
 import os
@@ -12,8 +12,8 @@ OWNER = "AaronPG095"
 STATS_PATH = Path(__file__).resolve().parents[1] / "assets" / "github-stats.svg"
 
 
-def graphql(query, token=None):
-    token = token or os.environ.get("GITHUB_TOKEN")
+def graphql(query):
+    token = os.environ.get("GITHUB_TOKEN")
     if not token:
         raise RuntimeError("GITHUB_TOKEN is required to read public contribution statistics")
     req = Request(
@@ -78,21 +78,6 @@ def public_commit_days(start, today):
                 counts[day] += item["commitCount"]
         window = last + timedelta(days=1)
     return counts
-
-
-def total_commits(start, today, token):
-    """Sum GitHub-counted commits visible to the authenticated account."""
-    total = 0
-    while start <= today:
-        end = min(today, date(start.year, 12, 31))
-        query = (
-            f'query {{ user(login:"{OWNER}") {{ '
-            f'contributionsCollection(from:"{iso_start(start)}",to:"{iso_end(end)}") {{ '
-            'totalCommitContributions } } }'
-        )
-        total += graphql(query, token)["contributionsCollection"]["totalCommitContributions"]
-        start = end + timedelta(days=1)
-    return total
 
 
 def streaks(daily, today):
@@ -187,13 +172,11 @@ def stats_svg(metrics):
 
 def collect_metrics(repositories, releases, search_total, today=None):
     today = today or datetime.now(timezone.utc).date()
-    user = graphql(f'query {{ user(login:"{OWNER}") {{ createdAt }} }}')
-    start = date.fromisoformat(user["createdAt"][:10])
     token = os.environ["PROFILE_TOTALS_TOKEN"]
     counts = public_commit_days(today - timedelta(days=364), today)
     daily = {today - timedelta(days=i): counts.get(today - timedelta(days=i), 0) for i in range(364, -1, -1)}
     totals = {
-        "commits": total_commits(start, today, token),
+        "commits": search_total("commit", token),
         "pull_requests": search_total("pr", token),
         "issues": search_total("issue"),
     }
