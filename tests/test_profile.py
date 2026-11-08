@@ -61,34 +61,20 @@ class ProfileActivityTests(unittest.TestCase):
 
 
 class DashboardTests(unittest.TestCase):
-    def test_public_commit_days_filters_repository_visibility_and_restricted_nodes(self):
-        from unittest.mock import patch
+    def test_combined_daily_counts_use_utc_and_count_overlap_once(self):
         from datetime import date
-        from github_metrics import public_commit_days
+        from unittest.mock import patch
+        from update_profile import combined_commit_days
 
-        day = date(2026, 11, 7)
-
-        def entry(visibility, count, restricted=False):
-            return {
-                "repository": {"visibility": visibility},
-                "contributions": {
-                    "pageInfo": {"hasNextPage": False},
-                    "nodes": [{
-                        "occurredAt": "2026-11-07T00:00:00Z",
-                        "commitCount": count,
-                        "isRestricted": restricted,
-                    }],
-                },
-            }
-
-        response = {"contributionsCollection": {"commitContributionsByRepository": [
-            entry("PUBLIC", 3),
-            entry("PRIVATE", 8),
-            entry("INTERNAL", 13),
-            entry("PUBLIC", 21, restricted=True),
-        ]}}
-        with patch("github_metrics.graphql", return_value=response):
-            self.assertEqual(public_commit_days(day, day), {day: 3})
+        today = date(2026, 11, 7)
+        response = {"total_count": 1, "incomplete_results": False, "items": [
+            {"commit": {"author": {"date": "2026-11-08T01:00:00+02:00"}}},
+        ]}
+        with patch("update_profile.api_json", return_value=response) as api:
+            counts = combined_commit_days(today, "test-token")
+        self.assertEqual(counts[today], 1)
+        self.assertEqual(sum(counts.values()), 1)
+        self.assertEqual(api.call_args.kwargs["token"], "test-token")
 
     def test_streak_stays_current_through_a_quiet_today(self):
         from datetime import date, timedelta

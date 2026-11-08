@@ -1,83 +1,11 @@
-"""Render GitHub totals and public-only daily commit activity."""
+"""Render GitHub totals and combined daily commit activity."""
 
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from html import escape
-import json
-import os
 from pathlib import Path
-from urllib.request import Request, urlopen
 
 OWNER = "AaronPG095"
 STATS_PATH = Path(__file__).resolve().parents[1] / "assets" / "github-stats.svg"
-
-
-def graphql(query):
-    token = os.environ.get("GITHUB_TOKEN")
-    if not token:
-        raise RuntimeError("GITHUB_TOKEN is required to read public contribution statistics")
-    req = Request(
-        "https://api.github.com/graphql",
-        data=json.dumps({"query": query}).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "AaronPG095-public-profile",
-        },
-        method="POST",
-    )
-    with urlopen(req, timeout=35) as response:
-        payload = json.load(response)
-    if payload.get("errors"):
-        raise RuntimeError("GitHub GraphQL query failed: " + str(payload["errors"])[:500])
-    data = payload.get("data", {})
-    if not data.get("user"):
-        raise RuntimeError("GitHub user contributions not available")
-    return data["user"]
-
-
-def iso_start(day):
-    return day.isoformat() + "T00:00:00Z"
-
-
-def iso_end(day):
-    return day.isoformat() + "T23:59:59Z"
-
-
-def public_commit_days(start, today):
-    """Count public GitHub commit contributions by UTC date."""
-    counts = defaultdict(int)
-    window = start
-    while window <= today:
-        last = min(today, window + timedelta(days=89))
-        query = (
-            f'query {{ user(login:"{OWNER}") {{ '
-            f'contributionsCollection(from:"{iso_start(window)}",to:"{iso_end(last)}") {{ '
-            'commitContributionsByRepository(maxRepositories:100) { '
-            'repository { visibility } '
-            'contributions(first:100) { '
-            'pageInfo { hasNextPage } '
-            'nodes { occurredAt commitCount isRestricted } '
-            '} } } } }'
-        )
-        collection = graphql(query)["contributionsCollection"]
-        entries = collection["commitContributionsByRepository"]
-        if len(entries) >= 100:
-            raise RuntimeError("Commit repository limit reached; refusing partial totals")
-        for entry in entries:
-            if entry["repository"]["visibility"] != "PUBLIC":
-                continue
-            if entry["contributions"]["pageInfo"]["hasNextPage"]:
-                raise RuntimeError("Commit contribution limit reached; refusing partial totals")
-            for item in entry["contributions"]["nodes"]:
-                if not item or item["isRestricted"]:
-                    continue
-                day = datetime.fromisoformat(item["occurredAt"].replace("Z", "+00:00")).date()
-                if not window <= day <= last:
-                    raise ValueError("Contribution date fell outside the requested window")
-                counts[day] += item["commitCount"]
-        window = last + timedelta(days=1)
-    return counts
 
 
 def streaks(daily, today):
@@ -118,8 +46,8 @@ def stats_svg(metrics):
     items = [
         ("Commits", f'{metrics["commits"]:,}', "Public + private, all time"),
         ("Pull requests", f'{metrics["pull_requests"]:,}', "Public + private, all time"),
-        ("Issues opened", f'{metrics["issues"]:,}', "Public, all time"),
-        ("Repositories", f'{metrics["repos"]:,}', "Public, owned"),
+        ("Issues opened", f'{metrics["issues"]:,}', "Public + private, all time"),
+        ("Repositories", f'{metrics["repos"]:,}', "Public + private, owned"),
         ("Releases", f'{metrics["releases"]:,}', "Published, owned"),
         ("Current streak", f'{metrics["current_streak"]:,} days', "Last 365 days"),
         ("Longest streak", f'{metrics["longest_streak_365"]:,} days', "Last 365 days"),
@@ -146,7 +74,7 @@ def stats_svg(metrics):
             f'<rect x="{28 + index * 13.6:.1f}" y="{414 - height}" width="10" '
             f'height="{height}" fill="{color}"><title>{day}: {count} commits</title></rect>'
         )
-    shapes.append('<text x="28" y="338" font-size="18" fill="#e8f1f5">Daily public commits · last 90 days</text>')
+    shapes.append('<text x="28" y="338" font-size="18" fill="#e8f1f5">Daily commits · last 90 days</text>')
     if days:
         shapes.append(f'<text x="28" y="437" font-size="14" fill="#a7bdc6">{days[0][0]}</text>')
         shapes.append(
@@ -156,7 +84,7 @@ def stats_svg(metrics):
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="475" '
         'viewBox="0 0 1280 475" role="img" aria-labelledby="title desc">\n'
         '<title id="title">GitHub development statistics</title>\n'
-        '<desc id="desc">All-time commits and pull requests, plus public issues, repositories and releases; '
+        '<desc id="desc">Public and private commits, pull requests, issues, repositories and releases; '
         '365-day daily commit averages and streaks. See README for details.</desc>\n'
         '<rect width="1280" height="475" rx="13" fill="#111e29"/>\n'
         '<path d="M28 30H91" stroke="#63c9c5" stroke-width="3"/>\n'
@@ -165,19 +93,6 @@ def stats_svg(metrics):
         '<g font-family="Segoe UI, Arial, sans-serif">\n'
         + "\n".join(shapes)
         + '\n<text x="28" y="459" font-size="12" fill="#9db0bb">'
-        'Daily measures use public commits and UTC dates.'
+        'Counts combine public and private activity. Daily measures use UTC.'
         '</text>\n</g>\n</svg>\n'
     )
-
-
-def collect_metrics(repositories, releases, search_total, today=None):
-    today = today or datetime.now(timezone.utc).date()
-    token = os.environ["PROFILE_TOTALS_TOKEN"]
-    counts = public_commit_days(today - timedelta(days=364), today)
-    daily = {today - timedelta(days=i): counts.get(today - timedelta(days=i), 0) for i in range(364, -1, -1)}
-    totals = {
-        "commits": search_total("commit", token),
-        "pull_requests": search_total("pr", token),
-        "issues": search_total("issue"),
-    }
-    return metrics_from_data(totals, daily, len(repositories), len(releases), today)

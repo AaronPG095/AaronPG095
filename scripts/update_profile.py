@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-"""Refresh the public-only activity section of the GitHub profile.
-
-Uses GET /users/{username}/repos (public repositories only), then reads
-releases and pull requests from those verified public repositories.
-Only the lifetime commit and pull request totals use the separate totals credential.
-"""
+"""Refresh combined profile statistics and curated public activity links."""
 
 from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
 import re
+from time import sleep, time
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from github_metrics import OWNER, STATS_PATH, collect_metrics, stats_svg
+from github_metrics import OWNER, STATS_PATH, metrics_from_data, stats_svg
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
 START = "<!-- profile-activity:start -->"
@@ -44,13 +41,29 @@ def api_json(path, params=None, token=None):
     token = token or os.getenv("GITHUB_TOKEN")
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    with urlopen(Request(url, headers=headers), timeout=25) as response:
-        return json.load(response)
+    request = Request(url, headers=headers)
+    for attempt in range(3):
+        try:
+            with urlopen(request, timeout=25) as response:
+                return json.load(response)
+        except HTTPError as error:
+            if attempt == 2 or error.code not in (403, 429):
+                raise
+            if error.headers.get("Retry-After"):
+                sleep(int(error.headers["Retry-After"]))
+            elif error.headers.get("X-RateLimit-Remaining") == "0":
+                sleep(max(1, int(error.headers["X-RateLimit-Reset"]) - time() + 1))
+            else:
+                raise
+        except URLError as error:
+            if attempt == 2 or not isinstance(error.reason, (ConnectionResetError, TimeoutError)):
+                raise
+            sleep(1)
 
 
-def pages(path, params=None):
+def pages(path, params=None, token=None):
     for page in range(1, MAX_PAGES + 1):
-        data = api_json(path, {**(params or {}), "per_page": PAGE_SIZE, "page": page})
+        data = api_json(path, {**(params or {}), "per_page": PAGE_SIZE, "page": page}, token=token)
         if not isinstance(data, list):
             raise ValueError(f"Expected a list from GitHub API: {path}")
         yield from data
@@ -118,6 +131,53 @@ def search_total(kind, token=None):
     return result["total_count"]
 
 
+def owned_private_counts(token):
+    if api_json("/user", token=token)["login"].casefold() != OWNER.casefold():
+        raise ValueError("The statistics token must belong to the profile owner")
+    repos = releases = 0
+    try:
+        for repo in pages("/user/repos", {"affiliation": "owner", "visibility": "private"}, token):
+            if repo["owner"]["login"].casefold() != OWNER.casefold() or not repo["private"]:
+                continue
+            repos += 1
+            releases += sum(
+                not release["draft"] and bool(release["published_at"])
+                for release in pages(f"/repos/{repo['full_name']}/releases", token=token)
+            )
+    except Exception:
+        raise RuntimeError("Unable to count private repositories or releases") from None
+    return repos, releases
+
+
+def combined_commit_days(today, token):
+    start = today - timedelta(days=364)
+    counts = {start + timedelta(days=i): 0 for i in range(365)}
+    window = start
+    while window <= today:
+        end = min(today, window + timedelta(days=29))
+        # Overlap adjacent windows by a day to cover author timezone offsets.
+        query = (
+            f"author:{OWNER} author-date:{window - timedelta(days=1)}"
+            f"..{end + timedelta(days=1)}"
+        )
+        page = 1
+        while True:
+            result = api_json("/search/commits", {
+                "q": query, "sort": "author-date", "order": "asc", "per_page": 100, "page": page,
+            }, token=token)
+            if result["incomplete_results"] or result["total_count"] > 1000:
+                raise RuntimeError("Daily commit search exceeded GitHub's complete result limit")
+            for item in result["items"]:
+                day = timestamp(item["commit"]["author"]["date"]).astimezone(timezone.utc).date()
+                if window <= day <= end:
+                    counts[day] += 1
+            if page * 100 >= result["total_count"]:
+                break
+            page += 1
+        window = end + timedelta(days=1)
+    return counts
+
+
 def render_activity(repositories, releases, authored_prs, now=None, metrics=None):
     now = now or datetime.now(timezone.utc)
     stable = [
@@ -133,10 +193,10 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     ]
     if metrics is not None:
         lines = [
-            "![GitHub totals and daily public commit activity](assets/github-stats.svg)",
+            "![GitHub totals and daily commit activity](assets/github-stats.svg)",
             "",
             f"**{metrics['commits']:,}** commits · **{metrics['pull_requests']:,}** pull requests · "
-            f"**{metrics['issues']:,}** issues · **{metrics['repos']:,}** public repositories · "
+            f"**{metrics['issues']:,}** issues · **{metrics['repos']:,}** repositories · "
             f"**{metrics['releases']:,}** published releases",
             "",
             f"**{metrics['current_streak']} days** current streak · "
@@ -185,9 +245,9 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     ]
     if metrics is not None:
         lines[-1] = (
-            "<sub>Commit and pull request totals combine public and private activity visible to the "
-            "refresh account. Commit totals use GitHub's default-branch search. Issues, repositories, releases, "
-            "and daily activity are public. Streaks and the daily average use the last 365 UTC days.</sub>"
+            "<sub>Statistics combine public and private activity visible to the refresh account. "
+            "Commits use GitHub's default-branch search. Repository and release counts cover "
+            "repositories I own. Streaks and the daily average use the last 365 UTC days.</sub>"
         )
     return "\n".join(lines)
 
@@ -207,7 +267,18 @@ def main():
 
     repositories = public_owned_repositories()
     releases, prs = get_activity(repositories)
-    metrics = collect_metrics(repositories, releases, search_total)
+    token = os.environ["PROFILE_TOTALS_TOKEN"]
+    private_repos, private_releases = owned_private_counts(token)
+    today = datetime.now(timezone.utc).date()
+    daily = combined_commit_days(today, token)
+    totals = {
+        "commits": search_total("commit", token),
+        "pull_requests": search_total("pr", token),
+        "issues": search_total("issue", token),
+    }
+    metrics = metrics_from_data(
+        totals, daily, len(repositories) + private_repos, len(releases) + private_releases, today
+    )
     dashboard = stats_svg(metrics)
     rendered = render_activity(repositories, releases, prs, metrics=metrics)
     updated = replace_section(original, rendered)
