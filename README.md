@@ -54,18 +54,20 @@ The repository includes a dependency-free Node.js CLI for tickets, progress logs
 ## Public development activity
 
 <!-- profile-activity:start -->
-| Public repositories | Published releases | Authored PRs in own public repositories |
-| ---: | ---: | ---: |
-| **29** | **14** | **35** |
+![Public GitHub statistics and daily commit activity](assets/github-stats.svg)
+
+**567** commits · **55** pull requests · **0** issues · **29** public repositories · **14** published releases
+
+**2 days** current streak · **6 days** longest streak · **1.1** average commits per day
 
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
 **Recent pull requests:**
+- [FluentTimer: feat: display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
 - [FluentTimer: feat: add pinned multi-timer list mode to widget](https://github.com/AaronPG095/FluentTimer/pull/5) · 07 Nov 2026
 - [FluentTimer: feat: add saved timers startup staging and auto-start](https://github.com/AaronPG095/FluentTimer/pull/3) · 07 Nov 2026
-- [FluentTimer: feat: add widget timer name visibility toggle](https://github.com/AaronPG095/FluentTimer/pull/2) · 07 Nov 2026
 
-<sub>Counts cover public repositories owned by this account; pull requests in other owners' repositories are not included. Refreshed weekly.</sub>
+<sub>Commits follow GitHub contribution rules. Pull requests and issues are authored across public repositories. Repository and release counts cover repositories I own. Streaks and the daily average use the last 365 UTC days. Refreshed weekly.</sub>
 <!-- profile-activity:end -->
 
 ## Background

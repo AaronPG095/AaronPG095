@@ -60,5 +60,44 @@ class ProfileActivityTests(unittest.TestCase):
         self.assertIn("Fix", title)
 
 
+class DashboardTests(unittest.TestCase):
+    def test_public_commit_days_filters_repository_visibility_and_restricted_nodes(self):
+        from unittest.mock import patch
+        from datetime import date
+        from github_metrics import public_commit_days
+
+        day = date(2026, 11, 7)
+
+        def entry(visibility, count, restricted=False):
+            return {
+                "repository": {"visibility": visibility},
+                "contributions": {
+                    "pageInfo": {"hasNextPage": False},
+                    "nodes": [{
+                        "occurredAt": "2026-11-07T00:00:00Z",
+                        "commitCount": count,
+                        "isRestricted": restricted,
+                    }],
+                },
+            }
+
+        response = {"contributionsCollection": {"commitContributionsByRepository": [
+            entry("PUBLIC", 3),
+            entry("PRIVATE", 8),
+            entry("INTERNAL", 13),
+            entry("PUBLIC", 21, restricted=True),
+        ]}}
+        with patch("github_metrics.graphql", return_value=response):
+            self.assertEqual(public_commit_days(day, day), {day: 3})
+
+    def test_streak_stays_current_through_a_quiet_today(self):
+        from datetime import date, timedelta
+        from github_metrics import streaks
+
+        today = date(2026, 11, 7)
+        daily = {today - timedelta(days=i): count for i, count in enumerate([0, 2, 1, 0, 5])}
+        self.assertEqual(streaks(daily, today), (2, 2))
+
+
 if __name__ == "__main__":
     unittest.main()

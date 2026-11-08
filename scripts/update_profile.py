@@ -3,7 +3,7 @@
 
 Uses GET /users/{username}/repos (public repositories only), then reads
 releases and pull requests from those verified public repositories.
-Never queries /user/repos, private repositories, or private contribution data.
+The dashboard explicitly filters contributions and search results to public repositories.
 """
 
 from datetime import datetime, timedelta, timezone
@@ -14,7 +14,7 @@ import re
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-OWNER = "AaronPG095"
+from github_metrics import OWNER, STATS_PATH, collect_metrics, stats_svg
 ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
 START = "<!-- profile-activity:start -->"
@@ -101,7 +101,17 @@ def get_activity(repositories):
     return releases, authored_prs
 
 
-def render_activity(repositories, releases, authored_prs, now=None):
+def search_total(kind):
+    result = api_json("/search/issues", {
+        "q": f"author:{OWNER} is:{kind} is:public",
+        "per_page": 1,
+    })
+    if result["incomplete_results"]:
+        raise RuntimeError(f"Incomplete public {kind} search; keeping existing dashboard")
+    return result["total_count"]
+
+
+def render_activity(repositories, releases, authored_prs, now=None, metrics=None):
     now = now or datetime.now(timezone.utc)
     stable = [
         release for repo, release in releases
@@ -114,6 +124,18 @@ def render_activity(repositories, releases, authored_prs, now=None):
         "| ---: | ---: | ---: |",
         f"| **{len(repositories)}** | **{len(releases)}** | **{len(authored_prs)}** |",
     ]
+    if metrics is not None:
+        lines = [
+            "![Public GitHub statistics and daily commit activity](assets/github-stats.svg)",
+            "",
+            f"**{metrics['commits']:,}** commits · **{metrics['pull_requests']:,}** pull requests · "
+            f"**{metrics['issues']:,}** issues · **{metrics['repos']:,}** public repositories · "
+            f"**{metrics['releases']:,}** published releases",
+            "",
+            f"**{metrics['current_streak']} days** current streak · "
+            f"**{metrics['longest_streak_365']} days** longest streak · "
+            f"**{metrics['average_day_365']:.1f}** average commits per day",
+        ]
     if stable:
         release = stable[0]
         tag = release["tag_name"]
@@ -136,7 +158,7 @@ def render_activity(repositories, releases, authored_prs, now=None):
         title = pr.get("title", "")
         if not updated or timestamp(updated) < cutoff:
             continue
-        if re.match(r"(?i)^(sync token-lean pack|chore:|docs: refresh)", title):
+        if re.match(r"(?i)^(sync token-lean pack|chore(?:\([^)]*\))?:|docs: refresh)", title):
             continue
         number = pr.get("number")
         if not isinstance(number, int):
@@ -154,6 +176,12 @@ def render_activity(repositories, releases, authored_prs, now=None):
         "",
         "<sub>Counts cover public repositories owned by this account; pull requests in other owners' repositories are not included. Refreshed weekly.</sub>",
     ]
+    if metrics is not None:
+        lines[-1] = (
+            "<sub>Commits follow GitHub contribution rules. Pull requests and issues are authored "
+            "across public repositories. Repository and release counts cover repositories I own. "
+            "Streaks and the daily average use the last 365 UTC days. Refreshed weekly.</sub>"
+        )
     return "\n".join(lines)
 
 
@@ -172,8 +200,11 @@ def main():
 
     repositories = public_owned_repositories()
     releases, prs = get_activity(repositories)
-    rendered = render_activity(repositories, releases, prs)
+    metrics = collect_metrics(repositories, releases, search_total)
+    dashboard = stats_svg(metrics)
+    rendered = render_activity(repositories, releases, prs, metrics=metrics)
     updated = replace_section(original, rendered)
+    STATS_PATH.write_text(dashboard, encoding="utf-8")
     if updated != original:
         README.write_text(updated, encoding="utf-8")
 
