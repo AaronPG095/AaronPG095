@@ -3,7 +3,7 @@
 
 Uses GET /users/{username}/repos (public repositories only), then reads
 releases and pull requests from those verified public repositories.
-The dashboard explicitly filters contributions and search results to public repositories.
+Only the lifetime commit and pull request totals use the separate totals credential.
 """
 
 from datetime import datetime, timedelta, timezone
@@ -31,7 +31,7 @@ RECENT_DAYS = 180
 MAX_RECENT_PRS = 3
 
 
-def api_json(path, params=None):
+def api_json(path, params=None, token=None):
     if not path.startswith("/") or "://" in path:
         raise ValueError("GitHub API path must be relative")
     query = urlencode(params or {})
@@ -41,7 +41,7 @@ def api_json(path, params=None):
         "X-GitHub-Api-Version": "2022-11-28",
         "User-Agent": "AaronPG095-public-profile",
     }
-    token = os.getenv("GITHUB_TOKEN")
+    token = token or os.getenv("GITHUB_TOKEN")
     if token:
         headers["Authorization"] = f"Bearer {token}"
     with urlopen(Request(url, headers=headers), timeout=25) as response:
@@ -101,13 +101,14 @@ def get_activity(repositories):
     return releases, authored_prs
 
 
-def search_total(kind):
+def search_total(kind, token=None):
+    visibility = "" if token else " is:public"
     result = api_json("/search/issues", {
-        "q": f"author:{OWNER} is:{kind} is:public",
+        "q": f"author:{OWNER} is:{kind}{visibility}",
         "per_page": 1,
-    })
+    }, token=token)
     if result["incomplete_results"]:
-        raise RuntimeError(f"Incomplete public {kind} search; keeping existing dashboard")
+        raise RuntimeError(f"Incomplete {kind} search; keeping existing dashboard")
     return result["total_count"]
 
 
@@ -126,7 +127,7 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     ]
     if metrics is not None:
         lines = [
-            "![Public GitHub statistics and daily commit activity](assets/github-stats.svg)",
+            "![GitHub totals and daily public commit activity](assets/github-stats.svg)",
             "",
             f"**{metrics['commits']:,}** commits · **{metrics['pull_requests']:,}** pull requests · "
             f"**{metrics['issues']:,}** issues · **{metrics['repos']:,}** public repositories · "
@@ -178,9 +179,9 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     ]
     if metrics is not None:
         lines[-1] = (
-            "<sub>Commits follow GitHub contribution rules. Pull requests and issues are authored "
-            "across public repositories. Repository and release counts cover repositories I own. "
-            "Streaks and the daily average use the last 365 UTC days. Refreshed weekly.</sub>"
+            "<sub>Commit and pull request totals combine public and private activity visible to the "
+            "refresh account. Commits follow GitHub contribution rules. Issues, repositories, releases, "
+            "and daily activity are public. Streaks and the daily average use the last 365 UTC days.</sub>"
         )
     return "\n".join(lines)
 

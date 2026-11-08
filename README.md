@@ -54,9 +54,9 @@ The repository includes a dependency-free Node.js CLI for tickets, progress logs
 ## Public development activity
 
 <!-- profile-activity:start -->
-![Public GitHub statistics and daily commit activity](assets/github-stats.svg)
+![GitHub totals and daily public commit activity](assets/github-stats.svg)
 
-**568** commits · **55** pull requests · **0** issues · **29** public repositories · **14** published releases
+**568** commits · **157** pull requests · **0** issues · **29** public repositories · **14** published releases
 
 **2 days** current streak · **6 days** longest streak · **1.1** average commits per day
 
@@ -67,7 +67,7 @@ The repository includes a dependency-free Node.js CLI for tickets, progress logs
 - [FluentTimer: feat: add pinned multi-timer list mode to widget](https://github.com/AaronPG095/FluentTimer/pull/5) · 07 Nov 2026
 - [FluentTimer: feat: add saved timers startup staging and auto-start](https://github.com/AaronPG095/FluentTimer/pull/3) · 07 Nov 2026
 
-<sub>Commits follow GitHub contribution rules. Pull requests and issues are authored across public repositories. Repository and release counts cover repositories I own. Streaks and the daily average use the last 365 UTC days. Refreshed weekly.</sub>
+<sub>Commit and pull request totals combine public and private activity visible to the refresh account. Commits follow GitHub contribution rules. Issues, repositories, releases, and daily activity are public. Streaks and the daily average use the last 365 UTC days.</sub>
 <!-- profile-activity:end -->
 
 ## Background

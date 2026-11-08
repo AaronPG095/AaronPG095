@@ -1,9 +1,4 @@
-"""Generate a public-only, GitHub-counted contribution statistics panel.
-
-Uses GitHub GraphQL with the workflow's repository-scoped GITHUB_TOKEN.
-Private/internal contributions require additional user scopes; never grant them.
-Counts reflect GitHub contribution rules, not all Git objects on every branch.
-"""
+"""Render GitHub totals and public-only daily commit activity."""
 
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
@@ -17,8 +12,8 @@ OWNER = "AaronPG095"
 STATS_PATH = Path(__file__).resolve().parents[1] / "assets" / "github-stats.svg"
 
 
-def graphql(query):
-    token = os.environ.get("GITHUB_TOKEN")
+def graphql(query, token=None):
+    token = token or os.environ.get("GITHUB_TOKEN")
     if not token:
         raise RuntimeError("GITHUB_TOKEN is required to read public contribution statistics")
     req = Request(
@@ -85,6 +80,21 @@ def public_commit_days(start, today):
     return counts
 
 
+def total_commits(start, today, token):
+    """Sum GitHub-counted commits visible to the authenticated account."""
+    total = 0
+    while start <= today:
+        end = min(today, date(start.year, 12, 31))
+        query = (
+            f'query {{ user(login:"{OWNER}") {{ '
+            f'contributionsCollection(from:"{iso_start(start)}",to:"{iso_end(end)}") {{ '
+            'totalCommitContributions } } }'
+        )
+        total += graphql(query, token)["contributionsCollection"]["totalCommitContributions"]
+        start = end + timedelta(days=1)
+    return total
+
+
 def streaks(daily, today):
     active = {day for day, count in daily.items() if count > 0}
     longest = run = 0
@@ -121,8 +131,8 @@ def metrics_from_data(totals, daily, repos, releases, today=None):
 def stats_svg(metrics):
     """Render a compact, dependency-free, ten-metric SVG panel."""
     items = [
-        ("Public commits", f'{metrics["commits"]:,}', "GitHub-counted, all time"),
-        ("Pull requests", f'{metrics["pull_requests"]:,}', "Public, all time"),
+        ("Commits", f'{metrics["commits"]:,}', "Public + private, all time"),
+        ("Pull requests", f'{metrics["pull_requests"]:,}', "Public + private, all time"),
         ("Issues opened", f'{metrics["issues"]:,}', "Public, all time"),
         ("Repositories", f'{metrics["repos"]:,}', "Public, owned"),
         ("Releases", f'{metrics["releases"]:,}', "Published, owned"),
@@ -151,7 +161,7 @@ def stats_svg(metrics):
             f'<rect x="{28 + index * 13.6:.1f}" y="{414 - height}" width="10" '
             f'height="{height}" fill="{color}"><title>{day}: {count} commits</title></rect>'
         )
-    shapes.append('<text x="28" y="338" font-size="18" fill="#e8f1f5">Daily commits · last 90 days</text>')
+    shapes.append('<text x="28" y="338" font-size="18" fill="#e8f1f5">Daily public commits · last 90 days</text>')
     if days:
         shapes.append(f'<text x="28" y="437" font-size="14" fill="#a7bdc6">{days[0][0]}</text>')
         shapes.append(
@@ -160,8 +170,8 @@ def stats_svg(metrics):
     return (
         '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="475" '
         'viewBox="0 0 1280 475" role="img" aria-labelledby="title desc">\n'
-        '<title id="title">Public GitHub development statistics</title>\n'
-        '<desc id="desc">All-time public commits, pull requests, issues, repositories and releases; '
+        '<title id="title">GitHub development statistics</title>\n'
+        '<desc id="desc">All-time commits and pull requests, plus public issues, repositories and releases; '
         '365-day daily commit averages and streaks. See README for details.</desc>\n'
         '<rect width="1280" height="475" rx="13" fill="#111e29"/>\n'
         '<path d="M28 30H91" stroke="#63c9c5" stroke-width="3"/>\n'
@@ -170,7 +180,7 @@ def stats_svg(metrics):
         '<g font-family="Segoe UI, Arial, sans-serif">\n'
         + "\n".join(shapes)
         + '\n<text x="28" y="459" font-size="12" fill="#9db0bb">'
-        'Public GitHub contribution data. Daily measures use UTC; statistics refresh weekly.'
+        'Daily measures use public commits and UTC dates.'
         '</text>\n</g>\n</svg>\n'
     )
 
@@ -179,11 +189,12 @@ def collect_metrics(repositories, releases, search_total, today=None):
     today = today or datetime.now(timezone.utc).date()
     user = graphql(f'query {{ user(login:"{OWNER}") {{ createdAt }} }}')
     start = date.fromisoformat(user["createdAt"][:10])
-    counts = public_commit_days(start, today)
+    token = os.environ["PROFILE_TOTALS_TOKEN"]
+    counts = public_commit_days(today - timedelta(days=364), today)
     daily = {today - timedelta(days=i): counts.get(today - timedelta(days=i), 0) for i in range(364, -1, -1)}
     totals = {
-        "commits": sum(counts.values()),
-        "pull_requests": search_total("pr"),
+        "commits": total_commits(start, today, token),
+        "pull_requests": search_total("pr", token),
         "issues": search_total("issue"),
     }
     return metrics_from_data(totals, daily, len(repositories), len(releases), today)
