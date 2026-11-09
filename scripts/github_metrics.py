@@ -1,7 +1,6 @@
 """Render GitHub totals and combined daily commit activity."""
 
 from datetime import datetime, timedelta, timezone
-from html import escape
 from pathlib import Path
 
 OWNER = "AaronPG095"
@@ -30,6 +29,7 @@ def metrics_from_data(totals, daily, repos, releases, today=None):
     values = list(daily.values())
     return {
         **totals,
+        "updated": today,
         "repos": repos,
         "releases": releases,
         "current_streak": current,
@@ -42,57 +42,39 @@ def metrics_from_data(totals, daily, repos, releases, today=None):
 
 
 def stats_svg(metrics):
-    """Render a compact, dependency-free, ten-metric SVG panel."""
-    items = [
-        ("Commits", f'{metrics["commits"]:,}', "Public + private, all time"),
-        ("Pull requests", f'{metrics["pull_requests"]:,}', "Public + private, all time"),
-        ("Issues opened", f'{metrics["issues"]:,}', "Public + private, all time"),
-        ("Repositories", f'{metrics["repos"]:,}', "Public + private, owned"),
-        ("Releases", f'{metrics["releases"]:,}', "Published, owned"),
-        ("Current streak", f'{metrics["current_streak"]:,} days', "Last 365 days"),
-        ("Longest streak", f'{metrics["longest_streak_365"]:,} days', "Last 365 days"),
-        ("Average per day", f'{metrics["average_day_365"]:.1f}', "Commits, last 365 days"),
-        ("Most in a day", f'{metrics["peak_day_365"]:,}', "Commits, last 365 days"),
-        ("Active days", f'{metrics["active_days_365"]:,}', "Last 365 days"),
-    ]
-    shapes = []
-    for index, (label, value, note) in enumerate(items):
-        row, col = divmod(index, 5)
-        x, y = 28 + col * 245, 86 + row * 116
-        shapes.extend([
-            f'<rect x="{x}" y="{y}" width="231" height="103" rx="9" fill="#192936" stroke="#304454"/>',
-            f'<text x="{x+15}" y="{y+24}" font-size="14" fill="#a7bdc6">{escape(label)}</text>',
-            f'<text x="{x+15}" y="{y+63}" font-size="31" font-weight="650" fill="#edf5f8">{escape(value)}</text>',
-            f'<text x="{x+15}" y="{y+85}" font-size="12" fill="#88a5ac">{escape(note)}</text>',
-        ])
+    """Render the 90-day chart at a size suited to a narrow README."""
     days = metrics["recent_days"]
-    peak = max(1, *(count for _, count in days))
+    peak = max((count for _, count in days), default=0)
+    step = max(1, (peak + 3) // 4)
+    baseline = 224
+    scale = 40 / step
+    spacing = 500 / max(len(days), 1)
+    shapes = []
+    for tick in range(5):
+        y = baseline - tick * 40
+        shapes.append(
+            f'<path d="M54 {y}H554" stroke="#304454"/>'
+            f'<text x="46" y="{y + 5}" text-anchor="end">{tick * step}</text>'
+        )
     for index, (day, count) in enumerate(days):
-        height = max(2, round(56 * count / peak))
-        color = "#63c9c5" if count else "#304454"
-        shapes.append(
-            f'<rect x="{28 + index * 13.6:.1f}" y="{414 - height}" width="10" '
-            f'height="{height}" fill="{color}"><title>{day}: {count} commits</title></rect>'
-        )
-    shapes.append('<text x="28" y="338" font-size="18" fill="#e8f1f5">Daily commits · last 90 days</text>')
+        if count:
+            height = count * scale
+            shapes.append(
+                f'<rect x="{54 + index * spacing:.2f}" y="{baseline - height:.2f}" '
+                f'width="{spacing * 0.78:.2f}" height="{height:.2f}" fill="#63c9c5">'
+                f'<title>{day}: {count} commits</title></rect>'
+            )
     if days:
-        shapes.append(f'<text x="28" y="437" font-size="14" fill="#a7bdc6">{days[0][0]}</text>')
-        shapes.append(
-            f'<text x="1252" y="437" text-anchor="end" font-size="14" fill="#a7bdc6">{days[-1][0]}</text>'
-        )
+        shapes.append(f'<text x="54" y="252">{days[0][0]:%d %b}</text>')
+        shapes.append(f'<text x="554" y="252" text-anchor="end">{days[-1][0]:%d %b}</text>')
     return (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="475" '
-        'viewBox="0 0 1280 475" role="img" aria-labelledby="title desc">\n'
-        '<title id="title">GitHub development statistics</title>\n'
-        '<desc id="desc">Public and private commits, pull requests, issues, repositories and releases; '
-        '365-day daily commit averages and streaks. See README for details.</desc>\n'
-        '<rect width="1280" height="475" rx="13" fill="#111e29"/>\n'
-        '<path d="M28 30H91" stroke="#63c9c5" stroke-width="3"/>\n'
-        '<text x="28" y="66" font-family="Segoe UI, Arial, sans-serif" font-size="25" '
-        'font-weight="650" fill="#e8f1f5">Development statistics</text>\n'
-        '<g font-family="Segoe UI, Arial, sans-serif">\n'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="580" height="274" '
+        'viewBox="0 0 580 274" role="img" aria-labelledby="title desc">\n'
+        '<title id="title">Daily commits over the last 90 days</title>\n'
+        '<desc id="desc">Combined public and private commit counts by UTC date.</desc>\n'
+        '<rect width="580" height="274" rx="12" fill="#111e29"/>\n'
+        '<g font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#a7bdc6">\n'
+        '<text x="24" y="36" font-size="23" fill="#e8f1f5">Daily commits · last 90 days</text>\n'
         + "\n".join(shapes)
-        + '\n<text x="28" y="459" font-size="12" fill="#9db0bb">'
-        'Counts combine public and private activity. Daily measures use UTC.'
-        '</text>\n</g>\n</svg>\n'
+        + "\n</g>\n</svg>\n"
     )

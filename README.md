@@ -42,7 +42,7 @@ I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a l
 
 The repository includes a dependency-free Node.js CLI for tickets, progress logs and review packets; optional Notion task tracking; and GitHub Actions that enforce plan completion and verification before merging.
 
-[Explore the workflow](https://github.com/AaronPG095/AI-Dev-Workflow)
+[Explore the workflow](https://github.com/AaronPG095/AI-Dev-Workflow) · [See the plan, review, and test evidence for FluentTimer’s multi-timer widget](https://github.com/AaronPG095/FluentTimer/pull/6)
 
 ## Technical focus
 
@@ -54,18 +54,22 @@ The repository includes a dependency-free Node.js CLI for tickets, progress logs
 ## Public development activity
 
 <!-- profile-activity:start -->
-![GitHub totals and daily commit activity](assets/github-stats.svg)
-
 **2,613** commits · **157** pull requests · **0** issues · **38** repositories · **14** published releases
 
+![Daily public and private commits over the last 90 days](assets/github-stats.svg)
+
 **3 days** current streak · **15 days** longest streak · **6.5** average commits per day
+
+**104** most commits in a day · **178** active days
+
+<sub>Updated 08 Nov 2026 (UTC)</sub>
 
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
 **Recent pull requests:**
-- [FluentTimer: feat: display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
-- [FluentTimer: feat: add pinned multi-timer list mode to widget](https://github.com/AaronPG095/FluentTimer/pull/5) · 07 Nov 2026
-- [FluentTimer: feat: add saved timers startup staging and auto-start](https://github.com/AaronPG095/FluentTimer/pull/3) · 07 Nov 2026
+- [FluentTimer: Display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
+- [FluentTimer: Add pinned multi-timer list mode to widget](https://github.com/AaronPG095/FluentTimer/pull/5) · 07 Nov 2026
+- [FluentTimer: Add saved timers startup staging and auto-start](https://github.com/AaronPG095/FluentTimer/pull/3) · 07 Nov 2026
 
 <sub>Statistics combine public and private activity visible to the refresh account. Commits use GitHub's default-branch search. Repository and release counts cover repositories I own. Streaks and the daily average use the last 365 UTC days.</sub>
 <!-- profile-activity:end -->

@@ -51,7 +51,7 @@ class ProfileActivityTests(unittest.TestCase):
         )
         self.assertIn("**1** | **1** | **2**", output)
         self.assertIn("FluentTimer v1.2.0", output)
-        self.assertIn("feat: add tray shortcuts", output)
+        self.assertIn("FluentTimer: Add tray shortcuts", output)
         self.assertNotIn("Sync token-lean", output)
 
     def test_safe_title_escapes_markdown(self):

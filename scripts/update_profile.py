@@ -95,7 +95,9 @@ def timestamp(value):
 
 
 def safe_title(value):
-    title = re.sub(r"\s+", " ", value).strip()[:95]
+    title = re.sub(r"\s+", " ", value).strip()
+    title = re.sub(r"(?i)^(feat|fix|perf|refactor)(?:\([^)]*\))?:\s+", "", title)[:95]
+    title = title[:1].upper() + title[1:]
     return re.sub(r"([\\\`*_\[\](){}<>|])", r"\\\1", title)
 
 
@@ -152,29 +154,38 @@ def owned_private_counts(token):
 def combined_commit_days(today, token):
     start = today - timedelta(days=364)
     counts = {start + timedelta(days=i): 0 for i in range(365)}
-    window = start
-    while window <= today:
-        end = min(today, window + timedelta(days=29))
+    windows = [
+        (start + timedelta(days=i), min(today, start + timedelta(days=i + 29)))
+        for i in range(0, 365, 30)
+    ]
+    while windows:
+        window, end = windows.pop(0)
         # Overlap adjacent windows by a day to cover author timezone offsets.
         query = (
             f"author:{OWNER} author-date:{window - timedelta(days=1)}"
             f"..{end + timedelta(days=1)}"
         )
         page = 1
+        dates = []
         while True:
             result = api_json("/search/commits", {
                 "q": query, "sort": "author-date", "order": "asc", "per_page": 100, "page": page,
             }, token=token)
             if result["incomplete_results"] or result["total_count"] > 1000:
-                raise RuntimeError("Daily commit search exceeded GitHub's complete result limit")
+                if window == end:
+                    raise RuntimeError("GitHub returned incomplete daily commit search results")
+                middle = window + (end - window) // 2
+                windows[:0] = [(window, middle), (middle + timedelta(days=1), end)]
+                break
             for item in result["items"]:
                 day = timestamp(item["commit"]["author"]["date"]).astimezone(timezone.utc).date()
                 if window <= day <= end:
-                    counts[day] += 1
+                    dates.append(day)
             if page * 100 >= result["total_count"]:
+                for day in dates:
+                    counts[day] += 1
                 break
             page += 1
-        window = end + timedelta(days=1)
     return counts
 
 
@@ -193,15 +204,20 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     ]
     if metrics is not None:
         lines = [
-            "![GitHub totals and daily commit activity](assets/github-stats.svg)",
-            "",
             f"**{metrics['commits']:,}** commits · **{metrics['pull_requests']:,}** pull requests · "
             f"**{metrics['issues']:,}** issues · **{metrics['repos']:,}** repositories · "
             f"**{metrics['releases']:,}** published releases",
             "",
+            "![Daily public and private commits over the last 90 days](assets/github-stats.svg)",
+            "",
             f"**{metrics['current_streak']} days** current streak · "
             f"**{metrics['longest_streak_365']} days** longest streak · "
             f"**{metrics['average_day_365']:.1f}** average commits per day",
+            "",
+            f"**{metrics['peak_day_365']:,}** most commits in a day · "
+            f"**{metrics['active_days_365']:,}** active days",
+            "",
+            f"<sub>Updated {metrics['updated']:%d %b %Y} (UTC)</sub>",
         ]
     if stable:
         release = stable[0]
