@@ -31,8 +31,7 @@ jobs:
           PROFILE_TOTALS_TOKEN: ${{ secrets.PROFILE_TOTALS_TOKEN }}
         run: |
           if [ -z "$PROFILE_TOTALS_TOKEN" ]; then
-            echo "::error::Set the PROFILE_TOTALS_TOKEN repository secret to refresh the combined totals."
-            exit 1
+            echo "::warning::PROFILE_TOTALS_TOKEN is not set; refreshing public releases and PRs while preserving the telemetry card."
           fi
           python3 scripts/update_profile.py
 

@@ -45,19 +45,36 @@ class ProfileActivityTests(unittest.TestCase):
                 "title": "Sync token-lean pack and review workflow from AI-Dev-Workflow",
                 "number": 43,
             }),
+            ("AaronPG095/FluentTimer", {
+                "state": "closed",
+                "merged_at": "2026-11-04T10:00:00Z",
+                "updated_at": "2026-11-04T10:00:00Z",
+                "title": "Plan - Process: AI Dev Workflow rollout",
+                "number": 44,
+            }),
         ]
         output = render_activity(
             ["AaronPG095/FluentTimer"], releases, prs, now
         )
-        self.assertIn("**1** | **1** | **2**", output)
+        self.assertIn("**1** | **1** | **3**", output)
         self.assertIn("FluentTimer v1.2.0", output)
         self.assertIn("FluentTimer: Add tray shortcuts", output)
         self.assertNotIn("Sync token-lean", output)
+        self.assertNotIn("AI Dev Workflow rollout", output)
 
-    def test_safe_title_escapes_markdown(self):
+    def test_preserve_telemetry_keeps_svg_without_metrics(self):
+        output = render_activity(["AaronPG095/FluentTimer"], [], [], preserve_telemetry=True)
+        self.assertIn("assets/github-stats.svg", output)
+        self.assertNotIn("Public repositories | Published releases", output)
+
+    def test_safe_title_escapes_markdown_and_strips_prefixes(self):
         title = safe_title("Fix [link](target) and markup")
         self.assertNotIn("[link](target)", title)
         self.assertIn("Fix", title)
+        self.assertEqual(
+            safe_title("Plan - Feature: Agentic Outer-Loop Supervisor"),
+            "Agentic Outer-Loop Supervisor",
+        )
 
 
 class DashboardTests(unittest.TestCase):
@@ -70,7 +87,7 @@ class DashboardTests(unittest.TestCase):
         response = {"total_count": 1, "incomplete_results": False, "items": [
             {"commit": {"author": {"date": "2026-11-08T01:00:00+02:00"}}},
         ]}
-        with patch("update_profile.api_json", return_value=response) as api:
+        with patch("update_profile.api_json", return_value=response) as api, patch("update_profile.sleep"):
             counts = combined_commit_days(today, "test-token")
         self.assertEqual(counts[today], 1)
         self.assertEqual(sum(counts.values()), 1)
@@ -83,6 +100,27 @@ class DashboardTests(unittest.TestCase):
         today = date(2026, 11, 7)
         daily = {today - timedelta(days=i): count for i, count in enumerate([0, 2, 1, 0, 5])}
         self.assertEqual(streaks(daily, today), (2, 2))
+
+    def test_stats_svg_renders_telemetry_cards_and_singular_tooltip(self):
+        from datetime import date
+        from github_metrics import metrics_from_data, stats_svg
+
+        today = date(2026, 11, 13)
+        daily = {today: 1}
+        metrics = metrics_from_data(
+            {"commits": 2650, "pull_requests": 160, "issues": 0},
+            daily,
+            repos=38,
+            releases=14,
+            today=today,
+        )
+        svg = stats_svg(metrics)
+        self.assertIn("Development telemetry", svg)
+        self.assertIn("2,650", svg)
+        self.assertIn("160", svg)
+        self.assertIn("14", svg)
+        self.assertIn("1 commit</title>", svg)
+        self.assertNotIn("1 commits</title>", svg)
 
 
 if __name__ == "__main__":

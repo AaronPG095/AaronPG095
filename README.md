@@ -1,85 +1,56 @@
 ![Aaron Greyling — software developer](assets/profile-banner.svg)
 
-I build web applications, native Windows software, and tools that make digital work more efficient. I'm based in Leipzig, Germany and run [Fluent Studio](https://www.fluent-studio.com/en), an independent software studio.
+I build web applications, native Windows software, and deterministic tooling for AI-assisted development. Based in Leipzig, Germany, and founder of [Fluent Studio](https://www.fluent-studio.com/en).
 
 [Portfolio](https://aaronpaulgreyling.netlify.app/) · [Fluent Studio](https://www.fluent-studio.com/en) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954)
 
 ## Selected work
 
-### [FluentOverlay](https://www.fluent-studio.com/en/fluentoverlay)
-**Windows productivity software · In development**
-
-A context-aware Windows overlay for application-specific shortcuts and workflows.
-
-`C#` · `WinUI 3` · `.NET`
-
-### [Fluent Studio](https://www.fluent-studio.com/en)
-**Software studio website**
-
-Designed and developed the studio website, including multilingual content, software product pages, and Supabase integration.
-
-`Next.js` · `React` · `TypeScript` · `Supabase`
-
-### [FluentTimer](https://github.com/AaronPG095/FluentTimer)
-**Windows desktop application · [Latest release](https://github.com/AaronPG095/FluentTimer/releases/latest)**
-
-A native timer with a floating desktop widget, Pomodoro sessions, reminders, alarms, and time tracking.
-
-`C#` · `WPF` · `.NET 10`
-
-### [Kollektiv Spinnen](https://github.com/AaronPG095/kollektiv-spinnen-website)
-**Festival platform · [Source code](https://github.com/AaronPG095/kollektiv-spinnen-website)**
-
-A festival web application combining an interactive timetable, multilingual content, administration, and contribution-based ticketing.
-
-`React` · `TypeScript` · `Supabase` · `PostgreSQL`
+| Project | What it does | Stack | Links |
+|---|---|---|---|
+| **FluentOverlay** | Context-aware Windows shortcut overlay using live UI Automation menu inspection, bundled JSON fallback packs, fuzzy recall, and an integrated MCP server | `C#` · `WinUI 3` · `.NET` | [Product page](https://www.fluent-studio.com/en/fluentoverlay) |
+| **FluentTimer** | Native Windows tray timer with a floating widget, Pomodoro sets, interval reminders, alarms, CSV history, and SHA-256 verified self-updates | `C#` · `WPF` · `.NET 10` | [Repo](https://github.com/AaronPG095/FluentTimer) · [Release](https://github.com/AaronPG095/FluentTimer/releases/latest) |
+| **TokenHUD** | Local-first Windows HUD tracking AI context load, token velocity, spikes, and quota windows from local SQLite and JSONL logs without reading message text | `C#` · `WPF` · `.NET` | [Repo](https://github.com/AaronPG095/TokenHUD) |
+| **Fluent Studio** | Bilingual studio marketing, product, and documentation site with localized `en`/`de` routing and Supabase integration | `Next.js` · `React` · `TypeScript` · `Supabase` | [Website](https://www.fluent-studio.com/en) |
+| **Kollektiv Spinnen** | Bilingual festival platform with an interactive timetable, event filters, admin tools, and contribution-based ticketing | `React` · `TypeScript` · `Supabase` · `PostgreSQL` | [Repo](https://github.com/AaronPG095/kollektiv-spinnen-website) · [Live](https://kollektiv-spinnen-timetable.vercel.app) |
 
 ## Development workflow
 
-I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a lightweight, multi-agent development process shared across Claude Code, Codex, Gemini/Antigravity and Cursor.
+I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a dependency-free Node.js harness shared across Claude Code, Codex, Gemini/Antigravity, and Cursor:
 
-**Plan and approve → define acceptance criteria → track implementation and handoffs → review changes → verify with CI → ship.**
+- **Deterministic Core:** zero-token session priming, verifiable acceptance criteria, single-pass review packets, and CI close-out gates.
+- **Modular Agentic Engine:** opt-in step supervisor, role-isolated adversarial `builder ↔ reviewer ↔ fixer` loops, and parallel git worktree waves.
 
-The repository includes a dependency-free Node.js CLI for tickets, progress logs and review packets; optional Notion task tracking; and GitHub Actions that enforce plan completion and verification before merging.
-
-[Explore the workflow](https://github.com/AaronPG095/AI-Dev-Workflow) · [See the plan, review, and test evidence for FluentTimer’s multi-timer widget](https://github.com/AaronPG095/FluentTimer/pull/6)
+[Explore the workflow](https://github.com/AaronPG095/AI-Dev-Workflow) · [Agentic supervisor & wave closure (PR #24)](https://github.com/AaronPG095/AI-Dev-Workflow/pull/24) · [FluentTimer widget evidence (PR #6)](https://github.com/AaronPG095/FluentTimer/pull/6)
 
 ## Technical focus
 
 - **Web:** TypeScript, JavaScript, React, Next.js, HTML, CSS, Tailwind
-- **Backend and data:** Node.js, Express, Supabase, PostgreSQL, MongoDB, MySQL, Laravel
-- **Desktop:** C#, .NET, WinUI 3, WPF
-- **Development:** Git, Docker, automated testing, AI-assisted development workflows
+- **Backend & data:** Node.js, Express, Supabase, PostgreSQL, SQLite, MySQL, MongoDB, Laravel
+- **Desktop:** C#, .NET 10, WinUI 3, WPF
+- **Tooling & workflow:** Git, Docker, automated testing, MCP, multi-agent CI harnesses
 
-## Public development activity
+## Development activity
 
 <!-- profile-activity:start -->
-**2,613** commits · **157** pull requests · **0** issues · **38** repositories · **14** published releases
-
-![Daily public and private commits over the last 90 days](assets/github-stats.svg)
-
-**3 days** current streak · **15 days** longest streak · **6.5** average commits per day
-
-**104** most commits in a day · **178** active days
-
-<sub>Updated 08 Nov 2026 (UTC)</sub>
+![Development telemetry: commits, pull requests, releases, streaks, and 90-day daily commit chart](assets/github-stats.svg)
 
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
 **Recent pull requests:**
-- [FluentTimer: Display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
-- [FluentTimer: Add pinned multi-timer list mode to widget](https://github.com/AaronPG095/FluentTimer/pull/5) · 07 Nov 2026
-- [FluentTimer: Add saved timers startup staging and auto-start](https://github.com/AaronPG095/FluentTimer/pull/3) · 07 Nov 2026
+- [AI-Dev-Workflow: Fleet and Archive Polish](https://github.com/AaronPG095/AI-Dev-Workflow/pull/25) · 13 Nov 2026
+- [AI-Dev-Workflow: Agentic Outer-Loop Supervisor and Wave Lifecycle Closure](https://github.com/AaronPG095/AI-Dev-Workflow/pull/24) · 12 Nov 2026
+- [AI-Dev-Workflow: Canonical Notion Ticket URLs](https://github.com/AaronPG095/AI-Dev-Workflow/pull/23) · 11 Nov 2026
 
-<sub>Statistics combine public and private activity visible to the refresh account. Commits use GitHub's default-branch search. Repository and release counts cover repositories I own. Streaks and the daily average use the last 365 UTC days.</sub>
+<sub>Statistics combine public and private activity visible to the refresh account. Commits use GitHub's default-branch search; repository and release counts cover owned repositories; streaks and the daily average use the last 365 UTC days.</sub>
 <!-- profile-activity:end -->
 
 ## Background
 
-Before moving into software development, I worked in professional kitchens and organized music events and festivals. That experience shaped how I approach software: start with real problems, build usable systems, and pay attention to reliability.
+Before moving into software development, I spent nine years in professional kitchens and organized music events and festivals. That work shaped how I build software: start with real constraints, design systems people can rely on under pressure, and verify behavior before shipping.
 
-I completed full-stack web development training at DCI and a Laravel development internship at ECommeleon. I'm currently attending Studienkolleg Sachsen in preparation for university study in Digital Humanities, while continuing to build software through Fluent Studio.
+I completed full-stack web development training at DCI and a Laravel development internship at ECommeleon. I'm currently attending Studienkolleg Sachsen in preparation for university study in Digital Humanities while building software through Fluent Studio.
 
-## Contact
+---
 
-[Portfolio](https://aaronpaulgreyling.netlify.app/) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954) · [Fluent Studio](https://www.fluent-studio.com/en)
+Leipzig, Germany · [Portfolio](https://aaronpaulgreyling.netlify.app/) · [Fluent Studio](https://www.fluent-studio.com/en) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954)

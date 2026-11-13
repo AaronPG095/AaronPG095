@@ -17,7 +17,9 @@ README = ROOT / "README.md"
 START = "<!-- profile-activity:start -->"
 END = "<!-- profile-activity:end -->"
 FEATURED = {
+    "AaronPG095/AI-Dev-Workflow",
     "AaronPG095/FluentTimer",
+    "AaronPG095/TokenHUD",
     "AaronPG095/kollektiv-spinnen-website",
     "AaronPG095/my-minimalist-portfolio",
 }
@@ -53,6 +55,8 @@ def api_json(path, params=None, token=None):
                 sleep(int(error.headers["Retry-After"]))
             elif error.headers.get("X-RateLimit-Remaining") == "0":
                 sleep(max(1, int(error.headers["X-RateLimit-Reset"]) - time() + 1))
+            elif error.code in (403, 429):
+                sleep(15 * (attempt + 1))
             else:
                 raise
         except URLError as error:
@@ -96,7 +100,11 @@ def timestamp(value):
 
 def safe_title(value):
     title = re.sub(r"\s+", " ", value).strip()
-    title = re.sub(r"(?i)^(feat|fix|perf|refactor)(?:\([^)]*\))?:\s+", "", title)[:95]
+    title = re.sub(
+        r"(?i)^(?:plan\s*-\s*(?:feature|bug|fix|refactor|docs|chore)|(?:feat|fix|perf|refactor)(?:\([^)]*\))?):\s+",
+        "",
+        title,
+    )[:95]
     title = title[:1].upper() + title[1:]
     return re.sub(r"([\\\`*_\[\](){}<>|])", r"\\\1", title)
 
@@ -171,6 +179,7 @@ def combined_commit_days(today, token):
             result = api_json("/search/commits", {
                 "q": query, "sort": "author-date", "order": "asc", "per_page": 100, "page": page,
             }, token=token)
+            sleep(2.1)
             if result["incomplete_results"] or result["total_count"] > 1000:
                 if window == end:
                     raise RuntimeError("GitHub returned incomplete daily commit search results")
@@ -189,7 +198,7 @@ def combined_commit_days(today, token):
     return counts
 
 
-def render_activity(repositories, releases, authored_prs, now=None, metrics=None):
+def render_activity(repositories, releases, authored_prs, now=None, metrics=None, preserve_telemetry=False):
     now = now or datetime.now(timezone.utc)
     stable = [
         release for repo, release in releases
@@ -197,27 +206,15 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
     ]
     stable.sort(key=lambda item: item["published_at"], reverse=True)
 
-    lines = [
-        "| Public repositories | Published releases | Authored PRs in own public repositories |",
-        "| ---: | ---: | ---: |",
-        f"| **{len(repositories)}** | **{len(releases)}** | **{len(authored_prs)}** |",
-    ]
-    if metrics is not None:
+    if metrics is not None or preserve_telemetry:
         lines = [
-            f"**{metrics['commits']:,}** commits · **{metrics['pull_requests']:,}** pull requests · "
-            f"**{metrics['issues']:,}** issues · **{metrics['repos']:,}** repositories · "
-            f"**{metrics['releases']:,}** published releases",
-            "",
-            "![Daily public and private commits over the last 90 days](assets/github-stats.svg)",
-            "",
-            f"**{metrics['current_streak']} days** current streak · "
-            f"**{metrics['longest_streak_365']} days** longest streak · "
-            f"**{metrics['average_day_365']:.1f}** average commits per day",
-            "",
-            f"**{metrics['peak_day_365']:,}** most commits in a day · "
-            f"**{metrics['active_days_365']:,}** active days",
-            "",
-            f"<sub>Updated {metrics['updated']:%d %b %Y} (UTC)</sub>",
+            "![Development telemetry: commits, pull requests, releases, streaks, and 90-day daily commit chart](assets/github-stats.svg)",
+        ]
+    else:
+        lines = [
+            "| Public repositories | Published releases | Authored PRs in own public repositories |",
+            "| ---: | ---: | ---: |",
+            f"| **{len(repositories)}** | **{len(releases)}** | **{len(authored_prs)}** |",
         ]
     if stable:
         release = stable[0]
@@ -241,7 +238,7 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
         title = pr.get("title", "")
         if not updated or timestamp(updated) < cutoff:
             continue
-        if re.match(r"(?i)^(sync token-lean pack|chore(?:\([^)]*\))?:|docs: refresh)", title):
+        if re.match(r"(?i)^(sync token-lean pack|chore(?:\([^)]*\))?:|docs: refresh|plan\s*-\s*process:)", title):
             continue
         number = pr.get("number")
         if not isinstance(number, int):
@@ -255,16 +252,18 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
             url = f"https://github.com/{repo}/pull/{number}"
             lines.append(f"- [{project}: {safe_title(title)}]({url}) · {date.strftime('%d %b %Y')}")
 
-    lines += [
-        "",
-        "<sub>Counts cover public repositories owned by this account; pull requests in other owners' repositories are not included. Refreshed weekly.</sub>",
-    ]
-    if metrics is not None:
-        lines[-1] = (
+    if metrics is not None or preserve_telemetry:
+        lines += [
+            "",
             "<sub>Statistics combine public and private activity visible to the refresh account. "
-            "Commits use GitHub's default-branch search. Repository and release counts cover "
-            "repositories I own. Streaks and the daily average use the last 365 UTC days.</sub>"
-        )
+            "Commits use GitHub's default-branch search; repository and release counts cover "
+            "owned repositories; streaks and the daily average use the last 365 UTC days.</sub>",
+        ]
+    else:
+        lines += [
+            "",
+            "<sub>Counts cover public repositories owned by this account; pull requests in other owners' repositories are not included. Refreshed weekly.</sub>",
+        ]
     return "\n".join(lines)
 
 
@@ -283,22 +282,30 @@ def main():
 
     repositories = public_owned_repositories()
     releases, prs = get_activity(repositories)
-    token = os.environ["PROFILE_TOTALS_TOKEN"]
-    private_repos, private_releases = owned_private_counts(token)
-    today = datetime.now(timezone.utc).date()
-    daily = combined_commit_days(today, token)
-    totals = {
-        "commits": search_total("commit", token),
-        "pull_requests": search_total("pr", token),
-        "issues": search_total("issue", token),
-    }
-    metrics = metrics_from_data(
-        totals, daily, len(repositories) + private_repos, len(releases) + private_releases, today
+    token = os.getenv("PROFILE_TOTALS_TOKEN", "").strip()
+    metrics = None
+    if token:
+        private_repos, private_releases = owned_private_counts(token)
+        today = datetime.now(timezone.utc).date()
+        daily = combined_commit_days(today, token)
+        totals = {
+            "commits": search_total("commit", token),
+            "pull_requests": search_total("pr", token),
+            "issues": search_total("issue", token),
+        }
+        metrics = metrics_from_data(
+            totals, daily, len(repositories) + private_repos, len(releases) + private_releases, today
+        )
+        STATS_PATH.write_text(stats_svg(metrics), encoding="utf-8")
+
+    rendered = render_activity(
+        repositories,
+        releases,
+        prs,
+        metrics=metrics,
+        preserve_telemetry=STATS_PATH.exists(),
     )
-    dashboard = stats_svg(metrics)
-    rendered = render_activity(repositories, releases, prs, metrics=metrics)
     updated = replace_section(original, rendered)
-    STATS_PATH.write_text(dashboard, encoding="utf-8")
     if updated != original:
         README.write_text(updated, encoding="utf-8")
 

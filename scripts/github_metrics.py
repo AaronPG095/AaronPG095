@@ -42,39 +42,78 @@ def metrics_from_data(totals, daily, repos, releases, today=None):
 
 
 def stats_svg(metrics):
-    """Render the 90-day chart at a size suited to a narrow README."""
+    """Render the unified telemetry card (KPIs + 90-day daily commit chart)."""
     days = metrics["recent_days"]
     peak = max((count for _, count in days), default=0)
     step = max(1, (peak + 3) // 4)
-    baseline = 224
-    scale = 40 / step
-    spacing = 500 / max(len(days), 1)
+    baseline = 316
+    scale = 30 / step
+    chart_left = 64
+    chart_right = 832
+    chart_width = chart_right - chart_left
+    spacing = chart_width / max(len(days), 1)
+
+    cards = [
+        ("COMMITS", f"{metrics['commits']:,}", f"{metrics['average_day_365']:.1f}/day · 365d avg"),
+        ("PULL REQUESTS", f"{metrics['pull_requests']:,}", f"{metrics['repos']:,} owned repos"),
+        ("RELEASES", f"{metrics['releases']:,}", "Public &amp; private"),
+        (
+            "STREAK",
+            f"{metrics['current_streak']}d current",
+            f"{metrics['longest_streak_365']}d best · {metrics['active_days_365']}d active",
+        ),
+    ]
+    kpi_svg = []
+    for idx, (label, value, sub) in enumerate(cards):
+        cx = 28 + idx * 204
+        kpi_svg.append(
+            f'<rect x="{cx}" y="68" width="192" height="70" rx="8" fill="#152432" stroke="#243848"/>\n'
+            f'<text x="{cx + 16}" y="88" font-size="11" font-weight="600" letter-spacing="0.9" fill="#91aaaf">{label}</text>\n'
+            f'<text x="{cx + 16}" y="113" font-size="21" font-weight="650" fill="#ecf3f5">{value}</text>\n'
+            f'<text x="{cx + 16}" y="130" font-size="11.5" fill="#91aaaf">{sub}</text>'
+        )
+
     shapes = []
     for tick in range(5):
-        y = baseline - tick * 40
+        y = baseline - tick * 30
         shapes.append(
-            f'<path d="M54 {y}H554" stroke="#304454"/>'
-            f'<text x="46" y="{y + 5}" text-anchor="end">{tick * step}</text>'
+            f'<path d="M{chart_left} {y}H{chart_right}" stroke="#213342"/>'
+            f'<text x="{chart_left - 8}" y="{y + 4}" text-anchor="end">{tick * step}</text>'
         )
     for index, (day, count) in enumerate(days):
         if count:
             height = count * scale
+            unit = "commit" if count == 1 else "commits"
             shapes.append(
-                f'<rect x="{54 + index * spacing:.2f}" y="{baseline - height:.2f}" '
-                f'width="{spacing * 0.78:.2f}" height="{height:.2f}" fill="#63c9c5">'
-                f'<title>{day}: {count} commits</title></rect>'
+                f'<rect x="{chart_left + index * spacing:.2f}" y="{baseline - height:.2f}" '
+                f'width="{spacing * 0.72:.2f}" height="{height:.2f}" rx="1.5" fill="#5cc8c5">'
+                f'<title>{day}: {count} {unit}</title></rect>'
             )
     if days:
-        shapes.append(f'<text x="54" y="252">{days[0][0]:%d %b}</text>')
-        shapes.append(f'<text x="554" y="252" text-anchor="end">{days[-1][0]:%d %b}</text>')
+        shapes.append(f'<text x="{chart_left}" y="338">{days[0][0]:%d %b}</text>')
+        shapes.append(
+            f'<text x="{chart_left + chart_width // 2}" y="338" text-anchor="middle">'
+            f'{days[len(days) // 2][0]:%d %b}</text>'
+        )
+        shapes.append(f'<text x="{chart_right}" y="338" text-anchor="end">{days[-1][0]:%d %b}</text>')
+
     return (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="580" height="274" '
-        'viewBox="0 0 580 274" role="img" aria-labelledby="title desc">\n'
-        '<title id="title">Daily commits over the last 90 days</title>\n'
-        '<desc id="desc">Combined public and private commit counts by UTC date.</desc>\n'
-        '<rect width="580" height="274" rx="12" fill="#111e29"/>\n'
-        '<g font-family="Segoe UI, Arial, sans-serif" font-size="17" fill="#a7bdc6">\n'
-        '<text x="24" y="36" font-size="23" fill="#e8f1f5">Daily commits · last 90 days</text>\n'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="860" height="360" '
+        'viewBox="0 0 860 360" role="img" aria-labelledby="title desc">\n'
+        '<title id="title">Development telemetry and daily commits</title>\n'
+        '<desc id="desc">Combined public and private GitHub totals, streaks, and 90-day commit activity.</desc>\n'
+        '<rect width="860" height="360" rx="12" fill="#101b26" stroke="#213342" stroke-width="1.5"/>\n'
+        '<g font-family="Segoe UI, Arial, sans-serif">\n'
+        '<path d="M28 24H76" stroke="#5cc8c5" stroke-width="3"/>\n'
+        '<text x="28" y="48" font-size="20" font-weight="650" fill="#ecf3f5">Development telemetry</text>\n'
+        f'<text x="832" y="48" font-size="13" fill="#91aaaf" text-anchor="end">'
+        f'Updated {metrics["updated"]:%d %b %Y} (UTC)</text>\n'
+        + "\n".join(kpi_svg)
+        + '\n<text x="28" y="170" font-size="14" font-weight="600" fill="#b8cbd0">'
+        'Daily commits · last 90 days</text>\n'
+        f'<text x="832" y="170" font-size="12" fill="#91aaaf" text-anchor="end">'
+        f'365d peak: {metrics["peak_day_365"]:,} commits/day</text>\n'
+        '<g font-size="12" fill="#91aaaf">\n'
         + "\n".join(shapes)
-        + "\n</g>\n</svg>\n"
+        + "\n</g>\n</g>\n</svg>\n"
     )
