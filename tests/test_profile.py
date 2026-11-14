@@ -67,6 +67,49 @@ class ProfileActivityTests(unittest.TestCase):
         self.assertIn("assets/github-stats.svg", output)
         self.assertNotIn("Public repositories | Published releases", output)
 
+    def test_recent_prs_prefers_repo_diversity_before_repeating(self):
+        now = datetime(2026, 11, 14, tzinfo=timezone.utc)
+        prs = [
+            ("AaronPG095/AI-Dev-Workflow", {
+                "state": "closed",
+                "merged_at": "2026-11-13T10:00:00Z",
+                "updated_at": "2026-11-13T10:00:00Z",
+                "title": "Plan - Feature: Supervisor",
+                "number": 25,
+            }),
+            ("AaronPG095/AI-Dev-Workflow", {
+                "state": "closed",
+                "merged_at": "2026-11-12T10:00:00Z",
+                "updated_at": "2026-11-12T10:00:00Z",
+                "title": "Plan - Feature: Waves",
+                "number": 24,
+            }),
+            ("AaronPG095/FluentTimer", {
+                "state": "closed",
+                "merged_at": "2026-11-07T10:00:00Z",
+                "updated_at": "2026-11-07T10:00:00Z",
+                "title": "feat: multi-timer pill rows",
+                "number": 6,
+            }),
+            ("AaronPG095/TokenHUD", {
+                "state": "closed",
+                "merged_at": "2026-10-31T10:00:00Z",
+                "updated_at": "2026-10-31T10:00:00Z",
+                "title": "Shared AI development process",
+                "number": 1,
+            }),
+        ]
+        output = render_activity(
+            ["AaronPG095/AI-Dev-Workflow", "AaronPG095/FluentTimer", "AaronPG095/TokenHUD"],
+            [],
+            prs,
+            now,
+        )
+        self.assertIn("AI-Dev-Workflow: Supervisor", output)
+        self.assertNotIn("AI-Dev-Workflow: Waves", output)
+        self.assertIn("FluentTimer: Multi-timer pill rows", output)
+        self.assertIn("TokenHUD: Shared AI development process", output)
+
     def test_safe_title_escapes_markdown_and_strips_prefixes(self):
         title = safe_title("Fix [link](target) and markup")
         self.assertNotIn("[link](target)", title)

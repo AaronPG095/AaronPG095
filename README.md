@@ -14,6 +14,24 @@ I build web applications, native Windows software, and deterministic tooling for
 | **Fluent Studio** | Bilingual studio marketing, product, and documentation site with localized `en`/`de` routing and Supabase integration | `Next.js` · `React` · `TypeScript` · `Supabase` | [Website](https://www.fluent-studio.com/en) |
 | **Kollektiv Spinnen** | Bilingual festival platform with an interactive timetable, event filters, admin tools, and contribution-based ticketing | `React` · `TypeScript` · `Supabase` · `PostgreSQL` | [Repo](https://github.com/AaronPG095/kollektiv-spinnen-website) · [Live](https://kollektiv-spinnen-timetable.vercel.app) |
 
+<details>
+<summary>Interface previews — FluentOverlay &amp; TokenHUD</summary>
+
+<table>
+  <tr>
+    <td valign="top" width="66%">
+      <strong>FluentOverlay</strong><br>
+      <img src="assets/previews/fluentoverlay.webp" alt="FluentOverlay dark-mode shortcut overlay over Cursor" />
+    </td>
+    <td valign="top" width="34%">
+      <strong>TokenHUD</strong><br>
+      <img src="assets/previews/tokenhud.png" alt="TokenHUD compact context load and quota HUD" />
+    </td>
+  </tr>
+</table>
+
+</details>
+
 ## Development workflow
 
 I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a dependency-free Node.js harness shared across Claude Code, Codex, Gemini/Antigravity, and Cursor:
@@ -23,12 +41,10 @@ I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a d
 
 [Explore the workflow](https://github.com/AaronPG095/AI-Dev-Workflow) · [Agentic supervisor & wave closure (PR #24)](https://github.com/AaronPG095/AI-Dev-Workflow/pull/24) · [FluentTimer widget evidence (PR #6)](https://github.com/AaronPG095/FluentTimer/pull/6)
 
-## Technical focus
+## Core stack & tooling
 
-- **Web:** TypeScript, JavaScript, React, Next.js, HTML, CSS, Tailwind
-- **Backend & data:** Node.js, Express, Supabase, PostgreSQL, SQLite, MySQL, MongoDB, Laravel
-- **Desktop:** C#, .NET 10, WinUI 3, WPF
-- **Tooling & workflow:** Git, Docker, automated testing, MCP, multi-agent CI harnesses
+- **Application stack:** TypeScript, React, Next.js, C#, .NET 10, WinUI 3, WPF, Node.js, Supabase, PostgreSQL, SQLite
+- **Verification & workflow:** Vitest, automated testing, Docker, MCP, GitHub Actions, multi-agent CI harnesses
 
 ## Development activity
 
@@ -38,9 +54,9 @@ I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a d
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
 **Recent pull requests:**
-- [AI-Dev-Workflow: Fleet and Archive Polish](https://github.com/AaronPG095/AI-Dev-Workflow/pull/25) · 13 Nov 2026
-- [AI-Dev-Workflow: Agentic Outer-Loop Supervisor and Wave Lifecycle Closure](https://github.com/AaronPG095/AI-Dev-Workflow/pull/24) · 12 Nov 2026
-- [AI-Dev-Workflow: Canonical Notion Ticket URLs](https://github.com/AaronPG095/AI-Dev-Workflow/pull/23) · 11 Nov 2026
+- [AI-Dev-Workflow: Plan Lint And Invariants](https://github.com/AaronPG095/AI-Dev-Workflow/pull/29) · 14 Nov 2026
+- [FluentTimer: Display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
+- [TokenHUD: Shared AI development process: plan, ticket, close-out gate](https://github.com/AaronPG095/TokenHUD/pull/1) · 31 Oct 2026
 
 <sub>Statistics combine public and private activity visible to the refresh account. Commits use GitHub's default-branch search; repository and release counts cover owned repositories; streaks and the daily average use the last 365 UTC days.</sub>
 <!-- profile-activity:end -->
@@ -53,4 +69,4 @@ I completed full-stack web development training at DCI and a Laravel development
 
 ---
 
-Leipzig, Germany · [Portfolio](https://aaronpaulgreyling.netlify.app/) · [Fluent Studio](https://www.fluent-studio.com/en) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954)
+Leipzig, Germany · [Email](mailto:aaron.p.greyling@gmail.com) · [Portfolio](https://aaronpaulgreyling.netlify.app/) · [Fluent Studio](https://www.fluent-studio.com/en) · [LinkedIn](https://www.linkedin.com/in/aaron-paul-greyling-54a8a954)

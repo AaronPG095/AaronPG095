@@ -198,6 +198,42 @@ def combined_commit_days(today, token):
     return counts
 
 
+def select_recent_prs(authored_prs, now):
+    cutoff = now - timedelta(days=RECENT_DAYS)
+    candidates = []
+    for repo, pr in authored_prs:
+        if repo not in FEATURED:
+            continue
+        if pr.get("state") != "open" and not pr.get("merged_at"):
+            continue
+        updated = pr.get("merged_at") or pr.get("updated_at")
+        title = pr.get("title", "")
+        if not updated or timestamp(updated) < cutoff:
+            continue
+        if re.match(r"(?i)^(sync token-lean pack|chore(?:\([^)]*\))?:|docs: refresh|plan\s*-\s*process:)", title):
+            continue
+        number = pr.get("number")
+        if not isinstance(number, int):
+            continue
+        candidates.append((timestamp(updated), repo, number, title))
+    candidates.sort(reverse=True, key=lambda item: item[0])
+
+    # Surface breadth across featured repositories before repeating one repo.
+    selected = []
+    seen_repos = set()
+    remainder = []
+    for item in candidates:
+        if item[1] not in seen_repos and len(selected) < MAX_RECENT_PRS:
+            selected.append(item)
+            seen_repos.add(item[1])
+        else:
+            remainder.append(item)
+    if len(selected) < MAX_RECENT_PRS:
+        selected.extend(remainder[: MAX_RECENT_PRS - len(selected)])
+        selected.sort(reverse=True, key=lambda item: item[0])
+    return selected
+
+
 def render_activity(repositories, releases, authored_prs, now=None, metrics=None, preserve_telemetry=False):
     now = now or datetime.now(timezone.utc)
     stable = [
@@ -227,27 +263,10 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
             f"**Latest stable release:** [FluentTimer {tag}](https://github.com/{RELEASE_PROJECT}/releases/tag/{tag}) · {date}",
         ]
 
-    cutoff = now - timedelta(days=RECENT_DAYS)
-    recent = []
-    for repo, pr in authored_prs:
-        if repo not in FEATURED:
-            continue
-        if pr.get("state") != "open" and not pr.get("merged_at"):
-            continue
-        updated = pr.get("merged_at") or pr.get("updated_at")
-        title = pr.get("title", "")
-        if not updated or timestamp(updated) < cutoff:
-            continue
-        if re.match(r"(?i)^(sync token-lean pack|chore(?:\([^)]*\))?:|docs: refresh|plan\s*-\s*process:)", title):
-            continue
-        number = pr.get("number")
-        if not isinstance(number, int):
-            continue
-        recent.append((timestamp(updated), repo, number, title))
-    recent.sort(reverse=True, key=lambda item: item[0])
+    recent = select_recent_prs(authored_prs, now)
     if recent:
         lines += ["", "**Recent pull requests:**"]
-        for date, repo, number, title in recent[:MAX_RECENT_PRS]:
+        for date, repo, number, title in recent:
             project = repo.split("/", 1)[1]
             url = f"https://github.com/{repo}/pull/{number}"
             lines.append(f"- [{project}: {safe_title(title)}]({url}) · {date.strftime('%d %b %Y')}")
