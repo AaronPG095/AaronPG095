@@ -159,42 +159,55 @@ def owned_private_counts(token):
     return repos, releases
 
 
-def combined_commit_days(today, token):
+def graphql_json(query, variables=None, token=None):
+    token = token or os.getenv("GITHUB_TOKEN")
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "User-Agent": "AaronPG095-public-profile",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    payload = json.dumps({"query": query, "variables": variables or {}}).encode("utf-8")
+    request = Request("https://api.github.com/graphql", data=payload, headers=headers, method="POST")
+    for attempt in range(3):
+        try:
+            with urlopen(request, timeout=25) as response:
+                data = json.load(response)
+            if data.get("errors"):
+                raise RuntimeError(f"GraphQL error: {data['errors']}")
+            return data["data"]
+        except URLError as error:
+            if attempt == 2 or not isinstance(error.reason, (ConnectionResetError, TimeoutError)):
+                raise
+            sleep(1)
+
+
+def contribution_days(today, token):
     start = today - timedelta(days=364)
+    query = (
+        "query($login: String!, $from: DateTime!, $to: DateTime!) { "
+        "user(login: $login) { "
+        "contributionsCollection(from: $from, to: $to) { "
+        "contributionCalendar { weeks { contributionDays { date contributionCount } } } "
+        "} } }"
+    )
+    data = graphql_json(
+        query,
+        {
+            "login": OWNER,
+            "from": f"{start.isoformat()}T00:00:00Z",
+            "to": f"{today.isoformat()}T23:59:59Z",
+        },
+        token=token,
+    )
     counts = {start + timedelta(days=i): 0 for i in range(365)}
-    windows = [
-        (start + timedelta(days=i), min(today, start + timedelta(days=i + 29)))
-        for i in range(0, 365, 30)
-    ]
-    while windows:
-        window, end = windows.pop(0)
-        # Overlap adjacent windows by a day to cover author timezone offsets.
-        query = (
-            f"author:{OWNER} author-date:{window - timedelta(days=1)}"
-            f"..{end + timedelta(days=1)}"
-        )
-        page = 1
-        dates = []
-        while True:
-            result = api_json("/search/commits", {
-                "q": query, "sort": "author-date", "order": "asc", "per_page": 100, "page": page,
-            }, token=token)
-            sleep(2.1)
-            if result["incomplete_results"] or result["total_count"] > 1000:
-                if window == end:
-                    raise RuntimeError("GitHub returned incomplete daily commit search results")
-                middle = window + (end - window) // 2
-                windows[:0] = [(window, middle), (middle + timedelta(days=1), end)]
-                break
-            for item in result["items"]:
-                day = timestamp(item["commit"]["author"]["date"]).astimezone(timezone.utc).date()
-                if window <= day <= end:
-                    dates.append(day)
-            if page * 100 >= result["total_count"]:
-                for day in dates:
-                    counts[day] += 1
-                break
-            page += 1
+    weeks = data["user"]["contributionsCollection"]["contributionCalendar"]["weeks"]
+    for week in weeks:
+        for item in week["contributionDays"]:
+            day = datetime.fromisoformat(item["date"]).date()
+            if start <= day <= today:
+                counts[day] = item["contributionCount"]
     return counts
 
 
@@ -244,7 +257,7 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
 
     if metrics is not None or preserve_telemetry:
         lines = [
-            "![Development telemetry: commits, pull requests, releases, streaks, and 90-day daily commit chart](assets/github-stats.svg)",
+            "![Development telemetry: commits, pull requests, releases, streaks, and 12-month contribution chart](assets/github-stats.svg)",
         ]
     else:
         lines = [
@@ -275,8 +288,9 @@ def render_activity(repositories, releases, authored_prs, now=None, metrics=None
         lines += [
             "",
             "<sub>Statistics combine public and private activity visible to the refresh account. "
-            "Commits use GitHub's default-branch search; repository and release counts cover "
-            "owned repositories; streaks and the daily average use the last 365 UTC days.</sub>",
+            "Lifetime commit and PR totals use GitHub search; repository and release counts cover "
+            "owned repositories; monthly bars, streaks, and daily averages use the contribution "
+            "calendar over the last 365 UTC days.</sub>",
         ]
     else:
         lines += [
@@ -306,7 +320,7 @@ def main():
     if token:
         private_repos, private_releases = owned_private_counts(token)
         today = datetime.now(timezone.utc).date()
-        daily = combined_commit_days(today, token)
+        daily = contribution_days(today, token)
         totals = {
             "commits": search_total("commit", token),
             "pull_requests": search_total("pr", token),

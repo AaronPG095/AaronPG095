@@ -121,20 +121,34 @@ class ProfileActivityTests(unittest.TestCase):
 
 
 class DashboardTests(unittest.TestCase):
-    def test_combined_daily_counts_use_utc_and_count_overlap_once(self):
+    def test_contribution_days_parses_calendar_through_today(self):
         from datetime import date
         from unittest.mock import patch
-        from update_profile import combined_commit_days
+        from update_profile import contribution_days
 
-        today = date(2026, 11, 7)
-        response = {"total_count": 1, "incomplete_results": False, "items": [
-            {"commit": {"author": {"date": "2026-11-08T01:00:00+02:00"}}},
-        ]}
-        with patch("update_profile.api_json", return_value=response) as api, patch("update_profile.sleep"):
-            counts = combined_commit_days(today, "test-token")
-        self.assertEqual(counts[today], 1)
-        self.assertEqual(sum(counts.values()), 1)
-        self.assertEqual(api.call_args.kwargs["token"], "test-token")
+        today = date(2026, 11, 14)
+        data = {
+            "user": {
+                "contributionsCollection": {
+                    "contributionCalendar": {
+                        "weeks": [
+                            {
+                                "contributionDays": [
+                                    {"date": "2026-11-13", "contributionCount": 7},
+                                    {"date": "2026-11-14", "contributionCount": 3},
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+        with patch("update_profile.graphql_json", return_value=data) as gql:
+            counts = contribution_days(today, "test-token")
+        self.assertEqual(counts[date(2026, 11, 13)], 7)
+        self.assertEqual(counts[today], 3)
+        self.assertEqual(sum(counts.values()), 10)
+        self.assertEqual(gql.call_args.kwargs["token"], "test-token")
 
     def test_streak_stays_current_through_a_quiet_today(self):
         from datetime import date, timedelta
@@ -144,14 +158,18 @@ class DashboardTests(unittest.TestCase):
         daily = {today - timedelta(days=i): count for i, count in enumerate([0, 2, 1, 0, 5])}
         self.assertEqual(streaks(daily, today), (2, 2))
 
-    def test_stats_svg_renders_telemetry_cards_and_singular_tooltip(self):
+    def test_stats_svg_renders_12_month_telemetry_with_years(self):
         from datetime import date
         from github_metrics import metrics_from_data, stats_svg
 
-        today = date(2026, 11, 13)
-        daily = {today: 1}
+        today = date(2026, 11, 14)
+        daily = {
+            date(2025, 12, 5): 21,
+            date(2026, 4, 10): 511,
+            today: 1,
+        }
         metrics = metrics_from_data(
-            {"commits": 2650, "pull_requests": 160, "issues": 0},
+            {"commits": 2657, "pull_requests": 189, "issues": 0},
             daily,
             repos=38,
             releases=14,
@@ -159,11 +177,14 @@ class DashboardTests(unittest.TestCase):
         )
         svg = stats_svg(metrics)
         self.assertIn("Development telemetry", svg)
-        self.assertIn("2,650", svg)
-        self.assertIn("160", svg)
+        self.assertIn("Monthly contributions · Dec 2025 – Nov 2026", svg)
+        self.assertIn("Dec '25", svg)
+        self.assertIn("Nov '26", svg)
+        self.assertIn("2,657", svg)
+        self.assertIn("189", svg)
         self.assertIn("14", svg)
-        self.assertIn("1 commit</title>", svg)
-        self.assertNotIn("1 commits</title>", svg)
+        self.assertIn(": 1 contribution (1 active day)", svg)
+        self.assertNotIn(": 1 contributions", svg)
 
 
 if __name__ == "__main__":

@@ -49,16 +49,16 @@ I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a d
 ## Development activity
 
 <!-- profile-activity:start -->
-![Development telemetry: commits, pull requests, releases, streaks, and 90-day daily commit chart](assets/github-stats.svg)
+![Development telemetry: commits, pull requests, releases, streaks, and 12-month contribution chart](assets/github-stats.svg)
 
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
 **Recent pull requests:**
-- [AI-Dev-Workflow: Plan Lint And Invariants](https://github.com/AaronPG095/AI-Dev-Workflow/pull/29) · 14 Nov 2026
+- [AI-Dev-Workflow: Workflow Stats And Lessons](https://github.com/AaronPG095/AI-Dev-Workflow/pull/30) · 14 Nov 2026
 - [FluentTimer: Display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
 - [TokenHUD: Shared AI development process: plan, ticket, close-out gate](https://github.com/AaronPG095/TokenHUD/pull/1) · 31 Oct 2026
 
-<sub>Statistics combine public and private activity visible to the refresh account. Commits use GitHub's default-branch search; repository and release counts cover owned repositories; streaks and the daily average use the last 365 UTC days.</sub>
+<sub>Statistics combine public and private activity visible to the refresh account. Lifetime commit and PR totals use GitHub search; repository and release counts cover owned repositories; monthly bars, streaks, and daily averages use the contribution calendar over the last 365 UTC days.</sub>
 <!-- profile-activity:end -->
 
 ## Background
