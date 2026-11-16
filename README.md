@@ -54,7 +54,7 @@ I maintain [AI-Dev-Workflow](https://github.com/AaronPG095/AI-Dev-Workflow), a d
 **Latest stable release:** [FluentTimer v0.3.0](https://github.com/AaronPG095/FluentTimer/releases/tag/v0.3.0) · 21 Oct 2026
 
 **Recent pull requests:**
-- [AI-Dev-Workflow: Workflow Stats And Lessons](https://github.com/AaronPG095/AI-Dev-Workflow/pull/30) · 14 Nov 2026
+- [AI-Dev-Workflow: Enforce Independent Subagent Reviews](https://github.com/AaronPG095/AI-Dev-Workflow/pull/36) · 16 Nov 2026
 - [FluentTimer: Display multiple active timers in pill widget rows](https://github.com/AaronPG095/FluentTimer/pull/6) · 07 Nov 2026
 - [TokenHUD: Shared AI development process: plan, ticket, close-out gate](https://github.com/AaronPG095/TokenHUD/pull/1) · 31 Oct 2026
 
