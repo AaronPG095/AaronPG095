@@ -5,14 +5,14 @@
 <g font-family="Segoe UI, Arial, sans-serif">
 <path d="M28 24H76" stroke="#5cc8c5" stroke-width="3"/>
 <text x="28" y="48" font-size="20" font-weight="650" fill="#ecf3f5">Development telemetry</text>
-<text x="832" y="48" font-size="13" fill="#91aaaf" text-anchor="end">Updated 14 Nov 2026 (UTC)</text>
+<text x="832" y="48" font-size="13" fill="#91aaaf" text-anchor="end">Updated 21 Nov 2026 (UTC)</text>
 <rect x="28" y="68" width="192" height="70" rx="8" fill="#152432" stroke="#243848"/>
 <text x="44" y="88" font-size="11" font-weight="600" letter-spacing="0.9" fill="#91aaaf">COMMITS</text>
-<text x="44" y="113" font-size="21" font-weight="650" fill="#ecf3f5">2,664</text>
-<text x="44" y="130" font-size="11.5" fill="#91aaaf">7.1/day · 365d avg</text>
+<text x="44" y="113" font-size="21" font-weight="650" fill="#ecf3f5">2,708</text>
+<text x="44" y="130" font-size="11.5" fill="#91aaaf">7.3/day · 365d avg</text>
 <rect x="232" y="68" width="192" height="70" rx="8" fill="#152432" stroke="#243848"/>
 <text x="248" y="88" font-size="11" font-weight="600" letter-spacing="0.9" fill="#91aaaf">PULL REQUESTS</text>
-<text x="248" y="113" font-size="21" font-weight="650" fill="#ecf3f5">194</text>
+<text x="248" y="113" font-size="21" font-weight="650" fill="#ecf3f5">241</text>
 <text x="248" y="130" font-size="11.5" fill="#91aaaf">38 owned repos</text>
 <rect x="436" y="68" width="192" height="70" rx="8" fill="#152432" stroke="#243848"/>
 <text x="452" y="88" font-size="11" font-weight="600" letter-spacing="0.9" fill="#91aaaf">RELEASES</text>
@@ -20,10 +20,10 @@
 <text x="452" y="130" font-size="11.5" fill="#91aaaf">Public &amp; private</text>
 <rect x="640" y="68" width="192" height="70" rx="8" fill="#152432" stroke="#243848"/>
 <text x="656" y="88" font-size="11" font-weight="600" letter-spacing="0.9" fill="#91aaaf">STREAK</text>
-<text x="656" y="113" font-size="21" font-weight="650" fill="#ecf3f5">21d current</text>
-<text x="656" y="130" font-size="11.5" fill="#91aaaf">21d best · 186d active</text>
+<text x="656" y="113" font-size="21" font-weight="650" fill="#ecf3f5">6d current</text>
+<text x="656" y="130" font-size="11.5" fill="#91aaaf">21d best · 192d active</text>
 <text x="28" y="170" font-size="14" font-weight="600" fill="#b8cbd0">Monthly contributions · Dec 2025 – Nov 2026</text>
-<text x="832" y="170" font-size="12" fill="#91aaaf" text-anchor="end">12m total: 2,563 · 365d peak: 102/day</text>
+<text x="832" y="170" font-size="12" fill="#91aaaf" text-anchor="end">12m total: 2,652 · 365d peak: 102/day</text>
 <g font-size="11.5" fill="#91aaaf">
 <path d="M64 312H832" stroke="#213342"/><text x="56" y="316" text-anchor="end">0</text>
 <path d="M64 284H832" stroke="#213342"/><text x="56" y="288" text-anchor="end">150</text>
@@ -63,8 +63,8 @@
 <rect x="717.44" y="271.68" width="37.12" height="40.32" rx="4" fill="#5cc8c5"><title>Oct 2026: 216 contributions (26 active days)</title></rect>
 <text x="736.00" y="265.68" text-anchor="middle" font-size="11.5" font-weight="600" fill="#ecf3f5">216</text>
 <text x="736.00" y="334" text-anchor="middle">Oct '26</text>
-<rect x="781.44" y="264.03" width="37.12" height="47.97" rx="4" fill="#5cc8c5"><title>Nov 2026: 257 contributions (14 active days)</title></rect>
-<text x="800.00" y="258.03" text-anchor="middle" font-size="11.5" font-weight="600" fill="#ecf3f5">257</text>
+<rect x="781.44" y="247.41" width="37.12" height="64.59" rx="4" fill="#5cc8c5"><title>Nov 2026: 346 contributions (20 active days)</title></rect>
+<text x="800.00" y="241.41" text-anchor="middle" font-size="11.5" font-weight="600" fill="#ecf3f5">346</text>
 <text x="800.00" y="334" text-anchor="middle">Nov '26</text>
 </g>
 </g>
